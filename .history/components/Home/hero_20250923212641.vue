@@ -659,7 +659,7 @@ $primary-color: #4fc08d;
   -moz-osx-font-smoothing: grayscale;
 }
 .hidden-elements-container {
-  background: url("/photos/hiddenBg.png");
+  background: url("/hiddenBg.png");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
