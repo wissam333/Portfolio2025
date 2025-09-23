@@ -171,81 +171,11 @@ if (process.client) {
   onUnmounted(() => window.removeEventListener("resize", checkWindowSize));
 }
 
-const firstRow = [
-  {
-    id: 1,
-    name: "Oasis Business Center",
-    type: "Real Estate",
-    urlField: "https://oasisbusinesscentre.net/",
-    image: "/works/7.png",
-  },
-  {
-    id: 2,
-    name: "Hamasat Perfumes",
-    type: "E-commerce",
-    urlField: "https://hamasatperfumes.com/",
-    image: "/works/3.webp",
-  },
-  {
-    id: 3,
-    name: "Emarati Magazine",
-    type: "News",
-    urlField: "https://emaratimagazine.com/",
-    image: "/works/1.png",
-  },
-  {
-    id: 7,
-    name: "Kahramana",
-    type: "Real Estate",
-    urlField: "https://kahramanarealestate.com/",
-    image: "/works/8.png",
-  },
-  {
-    id: 8,
-    name: "Dqiqa",
-    type: "Restaurant",
-    urlField: "https://dqiqa.ly/",
-    image: "/works/9.png",
-  },
-];
+const { data: firstRowData } = await useFetch("/api/work/firstRow");
+const firstRow = computed(() => firstRowData.value?.data || []);
 
-const secondRow = [
-  {
-    id: 4,
-    name: "UAE Triathlon",
-    type: "Sport",
-    urlField: "https://triathlonuae.net/",
-    image: "/works/4.png",
-  },
-  {
-    id: 5,
-    name: "Metaverse Training",
-    type: "Education",
-    urlField: "https://metavers-t.net/",
-    image: "/works/10.webp",
-  },
-  {
-    id: 6,
-    name: "True Future",
-    type: "Real Estate",
-    urlField: "https://truefre.net/",
-    image: "/works/2.svg",
-  },
-  {
-    id: 9,
-    name: "Massar School",
-    type: "Education",
-    urlField: "https://schooltec.org/",
-    image: "/works/6.png",
-  },
-  {
-    id: 10,
-    name: "UAE Archery Federation",
-    type: "Sport",
-    urlField: "https://uaearchery.net/",
-    image: "/works/5.webp",
-  },
-];
+const { data: secondRowData } = await useFetch("/api/work/secondRow");
+const secondRow = computed(() => secondRowData.value?.data || []);
 </script>
 
 <style lang="scss" scoped>

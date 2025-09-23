@@ -134,7 +134,7 @@
 
             <!-- Hidden fields -->
             <input type="hidden" name="_captcha" value="false" />
-            <input type="hidden" name="_next" value="/" />
+            <input type="hidden" name="_next" value="https://portfolio2025-topaz-psi.vercel.app/" />
             <input
               type="hidden"
               name="_autoresponse"
