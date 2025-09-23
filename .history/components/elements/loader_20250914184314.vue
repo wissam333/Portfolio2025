@@ -1,0 +1,204 @@
+<template>
+  <!-- use v-show so we can animate and measure the element reliably -->
+  <div v-show="!data.show" class="Ourloader" aria-hidden="!data.show">
+    <div class="handwriting-container">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 357.1 74.702"
+        class="handwriting-svg"
+        role="img"
+        aria-label="Wissam signature loader"
+      >
+        <g fill="transparent" stroke-linecap="round" fill-rule="evenodd">
+          <!-- IMPORTANT: ref so JS can measure the path length and animate it -->
+          <path
+            ref="handwritingPath"
+            class="handwriting-path"
+            d="M 30.8 73.501 L 19 73.501 L 0 5.801 L 9.4 2.801 L 25.2 63.401 L 40.1 10.801 L 52 10.801 L 66.8 63.401 L 82.5 3.101 L 91.3 5.801 L 72.4 73.501 L 60.6 73.501 L 45.8 20.901 L 30.8 73.501 Z M 290.1 73.501 L 281.1 73.501 L 281.1 21.501 L 289.8 21.501 L 289.8 30.201 Q 292.6 26.001 296.9 23.151 Q 301.2 20.301 306.7 20.301 Q 312.9 20.301 316.85 23.301 Q 320.8 26.301 322.4 31.301 Q 325.5 26.701 329.75 23.501 Q 334 20.301 340.3 20.301 Q 348.8 20.301 352.95 25.651 Q 357.1 31.001 357.1 39.601 L 357.1 73.501 L 348.1 73.501 L 348.1 40.301 Q 348.1 34.901 345.6 31.551 Q 343.1 28.201 338.7 28.201 Q 334.2 28.201 330.35 31.551 Q 326.5 34.901 323.6 39.401 L 323.6 73.501 L 314.6 73.501 L 314.6 40.301 Q 314.6 34.901 312.1 31.551 Q 309.6 28.201 305.2 28.201 Q 300.8 28.201 296.9 31.451 Q 293 34.701 290.1 39.101 L 290.1 73.501 Z M 121.3 69.301 L 125.1 61.801 Q 127.7 64.001 131.65 65.451 Q 135.6 66.901 140.1 66.901 Q 145.7 66.901 148.55 65.051 Q 151.4 63.201 151.4 60.301 Q 151.4 58.201 150.35 56.601 Q 149.3 55.001 146.5 53.451 Q 143.7 51.901 138.4 50.101 Q 131.1 47.601 127.45 44.151 Q 123.8 40.701 123.8 34.601 Q 123.8 28.601 129.05 24.451 Q 134.3 20.301 143.6 20.301 Q 148.6 20.301 152.5 21.351 Q 156.4 22.401 159.5 24.001 L 157 31.401 Q 154.3 29.801 150.85 28.801 Q 147.4 27.801 143.2 27.801 Q 138 27.801 135.3 29.901 Q 132.6 32.001 132.6 34.501 Q 132.6 36.901 134.7 38.601 Q 136.8 40.301 142.9 42.301 Q 152.8 45.601 156.7 49.601 Q 160.6 53.601 160.6 59.601 Q 160.6 66.601 154.95 70.651 Q 149.3 74.701 139.8 74.701 Q 133.9 74.701 129.15 73.201 Q 124.4 71.701 121.3 69.301 Z M 168.1 69.301 L 171.9 61.801 Q 174.5 64.001 178.45 65.451 Q 182.4 66.901 186.9 66.901 Q 192.5 66.901 195.35 65.051 Q 198.2 63.201 198.2 60.301 Q 198.2 58.201 197.15 56.601 Q 196.1 55.001 193.3 53.451 Q 190.5 51.901 185.2 50.101 Q 177.9 47.601 174.25 44.151 Q 170.6 40.701 170.6 34.601 Q 170.6 28.601 175.85 24.451 Q 181.1 20.301 190.4 20.301 Q 195.4 20.301 199.3 21.351 Q 203.2 22.401 206.3 24.001 L 203.8 31.401 Q 201.1 29.801 197.65 28.801 Q 194.2 27.801 190 27.801 Q 184.8 27.801 182.1 29.901 Q 179.4 32.001 179.4 34.501 Q 179.4 36.901 181.5 38.601 Q 183.6 40.301 189.7 42.301 Q 199.6 45.601 203.5 49.601 Q 207.4 53.601 207.4 59.601 Q 207.4 66.601 201.75 70.651 Q 196.1 74.701 186.6 74.701 Q 180.7 74.701 175.95 73.201 Q 171.2 71.701 168.1 69.301 Z M 255 25.701 L 255 21.501 L 263.2 21.501 L 263.2 60.901 Q 263.2 64.701 265.05 65.851 Q 266.9 67.001 269.1 67.001 L 267.2 74.001 Q 257.6 74.001 255.6 66.201 Q 253.3 69.401 249.35 72.051 Q 245.4 74.701 239.3 74.701 Q 232.8 74.701 227.5 71.401 Q 222.2 68.101 219.05 62.051 Q 215.9 56.001 215.9 47.801 Q 215.9 40.001 219.05 33.801 Q 222.2 27.601 227.75 23.951 Q 233.3 20.301 240.5 20.301 Q 245 20.301 248.65 21.851 Q 252.3 23.401 255 25.701 Z M 109.8 73.501 L 100.8 73.501 L 100.8 21.501 L 109.8 21.501 L 109.8 73.501 Z M 254.2 60.201 L 254.2 32.301 Q 251.5 30.401 248.25 29.251 Q 245 28.101 241.4 28.101 Q 236.6 28.101 232.95 30.551 Q 229.3 33.001 227.2 37.351 Q 225.1 41.701 225.1 47.501 Q 225.1 53.101 227.2 57.451 Q 229.3 61.801 233 64.251 Q 236.7 66.701 241.3 66.701 Q 245.1 66.701 248.5 64.851 Q 251.9 63.001 254.2 60.201 Z M 105.3 12.601 Q 102.7 12.601 100.85 10.701 Q 99 8.801 99 6.301 Q 99 3.401 100.7 1.701 Q 102.4 0.001 105.3 0.001 Q 107.9 0.001 109.75 1.851 Q 111.6 3.701 111.6 6.301 Q 111.6 9.101 109.9 10.851 Q 108.2 12.601 105.3 12.601 Z"
+          />
+        </g>
+      </svg>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, reactive, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
+
+const props = defineProps({
+  throttle: { type: Number, default: 200 },
+  duration: { type: Number, default: 2000 }, // ms - used for handwriting duration
+});
+
+const data = reactive({
+  percent: 0,
+  show: false,
+  canSucceed: true,
+});
+
+const handwritingPath = ref(null);
+let _timer = null;
+let _throttle = null;
+let _cut = 0;
+let animEndHandler = null;
+
+const clear = () => {
+  if (_timer) clearInterval(_timer);
+  if (_throttle) clearTimeout(_throttle);
+  _timer = null;
+  _throttle = null;
+};
+
+const startTimer = () => {
+  data.show = true; // show loader -> watcher will start handwriting
+  _cut = 10000 / Math.max(1, Math.floor(props.duration));
+  _timer = setInterval(() => {
+    data.percent = Math.min(100, Math.floor(data.percent + _cut));
+  }, 100);
+};
+
+const start = () => {
+  clear();
+  data.percent = 0;
+  data.canSucceed = true;
+  if (props.throttle) {
+    _throttle = setTimeout(startTimer, props.throttle);
+  } else {
+    startTimer();
+  }
+};
+
+const hide = () => {
+  clear();
+  // give the handwriting time to finish + tiny pause, then hide
+  setTimeout(() => {
+    data.show = false;
+    // reset percent slightly later
+    setTimeout(() => {
+      data.percent = 0;
+    }, 400);
+  }, 600);
+};
+
+const finish = () => {
+  data.percent = 100;
+  // Wait a bit for the stroke to finish, then hide
+  hide();
+};
+
+// Start handwriting animation when loader becomes visible
+const startHandwritingAnimation = async () => {
+  await nextTick();
+  const el = handwritingPath.value;
+  if (!el) return;
+
+  // clean previous animation
+  el.style.animation = "none";
+
+  // measure and set dash values
+  const length = Math.ceil(el.getTotalLength());
+  el.style.strokeDasharray = length;
+  el.style.strokeDashoffset = length;
+  // force reflow
+  void el.getBoundingClientRect();
+
+  const durSec = Math.max(0.4, props.duration / 1000); // at least 0.4s
+  el.style.animation = `handwriting ${durSec}s linear forwards`;
+
+  // remove old listener if any
+  if (animEndHandler) el.removeEventListener("animationend", animEndHandler);
+
+  animEndHandler = () => {
+    // animation finished — keep loader visible until page finish, or you can call finish() here if you want auto-hide
+    // finish(); // <-- uncomment to auto-hide when animation ends
+  };
+  el.addEventListener("animationend", animEndHandler, { once: true });
+};
+
+// watch loader visibility
+watch(
+  () => data.show,
+  (val) => {
+    if (val) {
+      startHandwritingAnimation();
+    } else {
+      // when hidden, reset animation state so it can replay next time
+      const el = handwritingPath.value;
+      if (el) {
+        el.style.animation = "none";
+        // attempt to reset dashoffset (safe if element still in DOM)
+        try {
+          el.style.strokeDashoffset = el.getTotalLength();
+        } catch (e) {
+          // ignore
+        }
+        if (animEndHandler) {
+          el.removeEventListener("animationend", animEndHandler);
+          animEndHandler = null;
+        }
+      }
+    }
+  }
+);
+
+// Nuxt hooks
+const nuxtApp = useNuxtApp();
+nuxtApp.hook("page:start", start);
+nuxtApp.hook("page:finish", finish);
+
+onBeforeUnmount(() => {
+  clear();
+  const el = handwritingPath.value;
+  if (el && animEndHandler) el.removeEventListener("animationend", animEndHandler);
+});
+</script>
+
+<style scoped>
+.Ourloader {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: #0f172a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* simple fade-in/out when v-show toggles */
+  transition: opacity 0.45s ease;
+}
+
+.handwriting-container {
+  width: 80%;
+  max-width: 640px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.handwriting-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.handwriting-path {
+  stroke: #ffffff;
+  stroke-width: 2;
+  fill: transparent;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  /* we set dash values via JS for accuracy */
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+.handwriting-path {
+  stroke-dasharray: 1500; /* adjust */
+  stroke-dashoffset: 1500;
+  animation: handwriting 10s linear forwards;
+}
+
+@keyframes handwriting {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+</style>

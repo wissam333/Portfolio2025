@@ -1,0 +1,27 @@
+$primary-color: #4fc08d;
+$secondary-color: #64ffda;
+
+/*
+  MIXIN 
+  -----------------------------------------
+*/
+@mixin defaultLinearGradient() {
+  background: -webkit-linear-gradient(to right, $primary);
+  background: -moz--linear-gradient(to right, $primary);
+  background: -o--linear-gradient(to right, $primary);
+  background: linear-gradient(to right, $primary);
+}
+
+@mixin linearGradient($color1, $color2) {
+  background: -webkit-linear-gradient(to right, $color1, $color2);
+  background: -moz--linear-gradient(to right, $color1, $color2);
+  background: -o--linear-gradient(to right, $color1, $color2);
+  background: linear-gradient(to right, $color1, $color2);
+}
+
+@mixin transition($all, $seconds, $pattern) {
+  -webkit-transition: $all $seconds $pattern;
+  -moz-transition: $all $seconds $pattern;
+  -o-transition: $all $seconds $pattern;
+  transition: $all $seconds $pattern;
+}
