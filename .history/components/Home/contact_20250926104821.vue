@@ -283,8 +283,9 @@ const isPhysicsActive = ref(false);
 const dragOffset = ref({ x: 0, y: 0 });
 const lastPosition = ref({ x: 0, y: 0 });
 const lastTime = ref(0);
-const leftLegRotation = ref(0);
-const rightLegRotation = ref(0);
+const leftLegRotation = ref(-10);
+const rightLegRotation = ref(10);
+const tubeRotation = ref(0);
 
 // Easter egg refs
 const isAstronautOnMoon = ref(false);
@@ -313,8 +314,9 @@ const orionLines = [
 
 // Physics constants
 const GRAVITY = 0;
-const FRICTION = 0.95;
-const BOUNCE = 0.5;
+const FRICTION = 0.98;
+const BOUNCE = 0.7;
+const MOON_GRAVITY = 0.05;
 const MOON_RADIUS = 75; // Moon radius in pixels
 const MOON_CENTER = { x: window.innerWidth - 115, y: 95 }; // Moon position
 
@@ -477,7 +479,6 @@ const stopDrag = () => {
   }
 };
 
-const mousePrediction = ref({ x: 0, y: 0 });
 const onDrag = (e) => {
   if (!isDragging.value) return;
 
@@ -485,34 +486,43 @@ const onDrag = (e) => {
   const currentTime = Date.now();
   const deltaTime = currentTime - lastTime.value;
 
-  // Predict next position for smoother movement
+  // Calculate position relative to container
+  let clientX = e.clientX;
+  let clientY = e.clientY;
+
+  // Boundary checking to prevent going outside viewport
+  clientX = Math.max(0, Math.min(clientX, window.innerWidth));
+  clientY = Math.max(0, Math.min(clientY, window.innerHeight));
+
   if (deltaTime > 0) {
-    const currentX = e.clientX - containerRect.left;
-    const currentY = e.clientY - containerRect.top;
+    const currentX = clientX - containerRect.left;
+    const currentY = clientY - containerRect.top;
 
-    // Apply prediction
-    mousePrediction.value = {
-      x: currentX + (currentX - lastPosition.value.x) * 0.3,
-      y: currentY + (currentY - lastPosition.value.y) * 0.3,
-    };
-
+    // Calculate velocity with smoothing
     astronautVelocity.value = {
-      x: ((currentX - lastPosition.value.x) / deltaTime) * 6, // Reduced for smoother PC
-      y: ((currentY - lastPosition.value.y) / deltaTime) * 6,
+      x: ((currentX - lastPosition.value.x) / deltaTime) * 8, // Reduced multiplier for smoother movement
+      y: ((currentY - lastPosition.value.y) / deltaTime) * 8,
     };
 
     lastPosition.value = { x: currentX, y: currentY };
+    lastTime.value = currentTime;
   }
 
-  // Use predicted position for immediate feedback
-  const newX = e.clientX - containerRect.left - dragOffset.value.x;
-  const newY = e.clientY - containerRect.top - dragOffset.value.y;
+  // Update astronaut position with boundary constraints
+  const newX = clientX - containerRect.left - dragOffset.value.x;
+  const newY = clientY - containerRect.top - dragOffset.value.y;
+
+  // Keep astronaut within container bounds while dragging
+  const astronautRect = astronaut.value.getBoundingClientRect();
+  const maxX = containerRect.width - astronautRect.width;
+  const maxY = containerRect.height - astronautRect.height;
 
   astronautPosition.value = {
-    x: newX,
-    y: newY,
+    x: Math.max(-10, Math.min(newX, maxX + 10)), // Allow slight overflow
+    y: Math.max(-10, Math.min(newY, maxY + 10)),
   };
 
+  // Add thruster particles while dragging
   addThrusterParticle();
 };
 
@@ -585,6 +595,9 @@ const updatePhysics = () => {
   leftLegRotation.value = -10 + Math.sin(Date.now() * 0.015) * 15;
   rightLegRotation.value = 10 + Math.cos(Date.now() * 0.015) * 15;
 
+  //  oxygen tube animation
+  tubeRotation.value = Math.sin(Date.now() * 0.02) * 5;
+
   // Boundary collision
   const containerRect = container.value?.getBoundingClientRect();
   if (containerRect) {
@@ -620,6 +633,10 @@ const updatePhysics = () => {
     }
   }
 
+  // Check moon proximity continuously
+  checkMoonProximity();
+
+  // NEW: Continuously check for landing during physics simulation
   if (isPhysicsActive.value && !isAstronautOnMoon.value) {
     checkMoonLanding();
   }
@@ -632,6 +649,56 @@ const updatePhysics = () => {
   ) {
     astronautVelocity.value = { x: 0, y: 0 };
     isPhysicsActive.value = false;
+  }
+};
+
+// Moon interaction functions
+const checkMoonProximity = () => {
+  if (!isPhysicsActive.value) return;
+
+  const moonElement = document.querySelector(".moon");
+  if (!moonElement || !container.value) return;
+
+  const moonRect = moonElement.getBoundingClientRect();
+  const containerRect = container.value.getBoundingClientRect();
+
+  const MOON_CENTER = {
+    x: moonRect.left - containerRect.left + moonRect.width / 2,
+    y: moonRect.top - containerRect.top + moonRect.height / 2,
+  };
+
+  const MOON_RADIUS = moonRect.width / 2;
+  const GRAVITY_RADIUS = MOON_RADIUS * 2; // Double the radius for gravity effect
+
+  const astronautCenter = {
+    x: astronautPosition.value.x + 25,
+    y: astronautPosition.value.y + 50,
+  };
+
+  const distance = Math.sqrt(
+    Math.pow(astronautCenter.x - MOON_CENTER.x, 2) +
+      Math.pow(astronautCenter.y - MOON_CENTER.y, 2)
+  );
+
+  // If astronaut is close to moon, apply moon gravity
+  if (distance < GRAVITY_RADIUS) {
+    const direction = {
+      x: MOON_CENTER.x - astronautCenter.x,
+      y: MOON_CENTER.y - astronautCenter.y,
+    };
+
+    const length = Math.sqrt(
+      direction.x * direction.x + direction.y * direction.y
+    );
+    if (length > 0) {
+      direction.x /= length;
+      direction.y /= length;
+
+      // Stronger gravity when closer to moon
+      const gravityStrength = MOON_GRAVITY * (1 - distance / GRAVITY_RADIUS);
+      astronautVelocity.value.x += direction.x * gravityStrength;
+      astronautVelocity.value.y += direction.y * gravityStrength;
+    }
   }
 };
 
@@ -1121,49 +1188,17 @@ onMounted(() => {
   &.dragging {
     cursor: grabbing !important;
     animation: none;
-    transform: scale(1.15);
-    filter: drop-shadow(0 0 15px rgba(100, 200, 255, 0.8)) brightness(1.1);
-    z-index: 1000;
-    transition: transform 0.1s ease, filter 0.1s ease;
-    &::after {
-      content: "";
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 80px;
-      height: 80px;
-      background: radial-gradient(
-        circle,
-        rgba(100, 200, 255, 0.2) 0%,
-        transparent 70%
-      );
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      animation: cursor-pulse 0.5s ease-out infinite;
-      pointer-events: none;
-    }
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 8px rgba(100, 200, 255, 0.5));
+    z-index: 1000; /* Ensure it's above everything while dragging */
   }
 
-  &:hover:not(.dragging) {
-    transform: scale(1.05);
-    filter: drop-shadow(0 0 10px rgba(100, 200, 255, 0.7));
-    transition: transform 0.2s ease, filter 0.2s ease;
-  }
+  /* Regular state */
   &:not(.dragging) {
     cursor: grab;
   }
 }
 
-@keyframes cursor-pulse {
-  0% {
-    transform: translate(-50%, -50%) scale(0.8);
-    opacity: 0.8;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(1.2);
-    opacity: 0;
-  }
-}
 .night-illustration {
   position: absolute;
   width: 100%;

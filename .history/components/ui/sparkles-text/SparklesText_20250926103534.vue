@@ -309,6 +309,8 @@ function spawnBurst(
 function onBurstTriggered() {
   if (!useEasterEggs().value.find((e) => e == 5)) {
     useEasterEggs().value.push(5);
+    toastMessage.value = "✨ Stars discovered!";
+    setTimeout(() => (toastMessage.value = ""), 2000);
   }
 }
 

@@ -146,6 +146,10 @@ const positionClass = computed(() => {
   width: 18px;
   height: 18px;
   fill: #cfe6ff;
+    @media (max-width: 991px) {
+  width: 15px;
+  height: 15px;
+  }
 }
 .title {
   font-size: 13px;
@@ -171,11 +175,6 @@ const positionClass = computed(() => {
   padding: 6px;
   cursor: pointer;
   transition: background 0.3s;
-  @media (max-width: 991px) {
-    padding: 0px;
-    width: 25px;
-    height: 25px;
-  }
 }
 .play-btn:hover {
   background: rgba(255, 255, 255, 0.2);
@@ -184,10 +183,6 @@ const positionClass = computed(() => {
   width: 20px;
   height: 20px;
   fill: #fff;
-  @media (max-width: 991px) {
-    width: 15px;
-    height: 15px;
-  }
 }
 
 /* Progress */
@@ -196,9 +191,6 @@ const positionClass = computed(() => {
   background: rgba(255, 255, 255, 0.08);
   border-radius: 6px;
   overflow: hidden;
-  @media (max-width: 991px) {
-    height: 3px;
-  }
 }
 .bar {
   height: 100%;

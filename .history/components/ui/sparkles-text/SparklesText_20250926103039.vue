@@ -4,10 +4,6 @@
       class="relative inline-block"
       ref="containerRef"
       @mousemove="handleMouseMove"
-      @touchmove="handleTouchMove"
-      @touchstart="handleTouchStart"
-      @touchend="handleTouchEnd"
-      @touchcancel="handleTouchEnd"
     >
       <!-- Ambient sparkles -->
       <div class="stars">
@@ -80,6 +76,9 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted, onUnmounted } from "vue";
+import { Motion } from "motion-v";
+
 interface AmbientSparkle {
   id: string;
   x: string;
@@ -118,19 +117,10 @@ const props = withDefaults(defineProps<Props>(), {
 const sparkles = ref<AmbientSparkle[]>([]);
 const bursts = ref<BurstParticle[]>([]);
 const containerRef = ref<HTMLElement | null>(null);
-const toastMessage = ref<string>("");
 
-// Mouse tracking
 let lastX: number | null = null;
 let lastY: number | null = null;
 let lastTime: number | null = null;
-
-// Touch tracking
-const isTouching = ref(false);
-const lastTouchX = ref<number | null>(null);
-const lastTouchY = ref<number | null>(null);
-const lastTouchTime = ref<number | null>(null);
-
 const burstTimeouts: number[] = [];
 let ambientInterval = 0;
 
@@ -158,7 +148,7 @@ function updateStars() {
   );
 }
 
-// --- Mouse burst logic ---
+// --- Burst logic ---
 function handleMouseMove(e: MouseEvent) {
   const el = containerRef.value;
   if (!el) return;
@@ -190,74 +180,12 @@ function handleMouseMove(e: MouseEvent) {
   lastTime = now;
 }
 
-// --- Touch burst logic ---
-function handleTouchStart(e: TouchEvent) {
-  isTouching.value = true;
-  const touch = e.touches[0];
-  if (!touch || !containerRef.value) return;
-
-  const rect = containerRef.value.getBoundingClientRect();
-  lastTouchX.value = touch.clientX;
-  lastTouchY.value = touch.clientY;
-  lastTouchTime.value = performance.now();
-
-  // Prevent default to avoid scrolling
-  e.preventDefault();
-}
-
-function handleTouchMove(e: TouchEvent) {
-  if (!isTouching.value || !containerRef.value) return;
-
-  const touch = e.touches[0];
-  if (!touch) return;
-
-  const rect = containerRef.value.getBoundingClientRect();
-  const offsetX = touch.clientX - rect.left;
-  const offsetY = touch.clientY - rect.top;
-
-  const now = performance.now();
-
-  if (
-    lastTouchX.value === null ||
-    lastTouchY.value === null ||
-    lastTouchTime.value === null
-  ) {
-    lastTouchX.value = touch.clientX;
-    lastTouchY.value = touch.clientY;
-    lastTouchTime.value = now;
-    return;
+function onBurstTriggered() {
+  if (!useEasterEggs().value.find((e) => e == 5)) {
+    useEasterEggs().value.push(5);
   }
-
-  const dx = touch.clientX - lastTouchX.value;
-  const dy = touch.clientY - lastTouchY.value;
-  const dt = now - lastTouchTime.value;
-
-  if (dt <= 0) return;
-
-  const vx = dx / dt;
-  const vy = dy / dt;
-  const velocity = Math.sqrt(vx * vx + vy * vy);
-
-  // Lower threshold for touch since fingers move slower than mice
-  if (velocity > 2) {
-    spawnBurst(offsetX, offsetY, vx, vy, velocity);
-  }
-
-  lastTouchX.value = touch.clientX;
-  lastTouchY.value = touch.clientY;
-  lastTouchTime.value = now;
-
-  e.preventDefault();
 }
 
-function handleTouchEnd() {
-  isTouching.value = false;
-  lastTouchX.value = null;
-  lastTouchY.value = null;
-  lastTouchTime.value = null;
-}
-
-// --- Burst spawning ---
 function spawnBurst(
   x: number,
   y: number,
@@ -306,12 +234,6 @@ function spawnBurst(
   burstTimeouts.push(t);
 }
 
-function onBurstTriggered() {
-  if (!useEasterEggs().value.find((e) => e == 5)) {
-    useEasterEggs().value.push(5);
-  }
-}
-
 // --- lifecycle ---
 onMounted(() => {
   initializeStars();
@@ -343,15 +265,15 @@ onUnmounted(() => {
 
 .toast {
   position: fixed;
-  bottom: 40px;
+  bottom: 40px; /* bottom-10 ≈ 2.5rem = 40px */
   left: 50%;
   transform: translateX(-50%);
-  background-color: #7c3aed;
-  color: #ffffff;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
+  background-color: #7c3aed; /* bg-purple-700 */
+  color: #ffffff; /* text-white */
+  padding: 0.75rem 1.5rem; /* py-3 px-6 */
+  border-radius: 0.5rem; /* rounded-lg */
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
   z-index: 9999;
 }
 
@@ -367,10 +289,5 @@ onUnmounted(() => {
 .fade-enter-to,
 .fade-leave-from {
   opacity: 1;
-}
-
-/* Improve touch interaction */
-.relative {
-  touch-action: pan-x pan-y; /* Allow some touch gestures while still getting events */
 }
 </style>

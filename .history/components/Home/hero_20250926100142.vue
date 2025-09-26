@@ -822,7 +822,7 @@ $primary-color: #4fc08d;
 /* Mobile only: add bigger tap zone */
 @media (max-width: 768px) {
   .star {
-    padding: 10px; /* invisible tap area */
+    padding: 5px; /* invisible tap area */
   }
 }
 </style>

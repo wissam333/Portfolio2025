@@ -13,6 +13,10 @@
               aria-hidden="true"
             />
 
+            <span class="name plain-name" aria-hidden="false">
+              Wissam Najjom
+            </span>
+
             <p class="lead">
               I am a highly motivated and passionate person with a keen interest
               in front-end web development. I am a quick learner and have
@@ -151,12 +155,26 @@ const imageUrls = slugs.map(
   transform: scale(1.2);
 }
 
-@media (max-width: 768px) {
-  .name {
-    padding-bottom: 30px;
+.plain-name {
+  display: none !important;
+  width: 100%;
+}
+
+@media (max-width: 767.98px) {
+  // .sparkles-name {
+  //   display: none !important;
+  // }
+
+  .plain-name {
+    display: inline-block !important;
+    font-size: 2.2rem !important;
+    -webkit-text-fill-color: unset;
+    background: none;
+    -webkit-background-clip: initial;
+    color: #fff;
   }
   .content {
-    padding-inline-start: 0 !important;
+    padding-inline-start: 0;
   }
 
   .lead {

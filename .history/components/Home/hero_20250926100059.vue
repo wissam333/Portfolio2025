@@ -583,7 +583,7 @@ $primary-color: #4fc08d;
 }
 
 .btn {
-  pointer-events: all !important;
+  pointer-events: all;
   padding: 0.8rem 2rem;
   border: 2px solid $text-color;
   background: transparent;
@@ -822,7 +822,7 @@ $primary-color: #4fc08d;
 /* Mobile only: add bigger tap zone */
 @media (max-width: 768px) {
   .star {
-    padding: 10px; /* invisible tap area */
+    padding: 20px; /* invisible tap area */
   }
 }
 </style>

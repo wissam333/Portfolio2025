@@ -247,21 +247,13 @@ const getStarStyle = (n) => {
   position: absolute;
   bottom: 0;
   z-index: 1;
+  /* Fade effect */
   -webkit-mask-image: linear-gradient(to bottom, transparent, black 80%);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: cover;
+
   mask-image: linear-gradient(to bottom, transparent, black 80%);
   mask-repeat: no-repeat;
   mask-size: cover;
-}
-.timeline-marker,
-.timeline-card {
-  transition: transform 0.15s ease, box-shadow 0.2s ease;
-  cursor: pointer;
-
-  &:active {
-    transform: scale(0.92);
-    box-shadow: 0 0 20px rgba(100, 255, 218, 0.6);
-  }
 }
 </style>

@@ -313,8 +313,9 @@ const orionLines = [
 
 // Physics constants
 const GRAVITY = 0;
-const FRICTION = 0.95;
-const BOUNCE = 0.5;
+const FRICTION = 0.98;
+const BOUNCE = 0.7;
+const MOON_GRAVITY = 0.05;
 const MOON_RADIUS = 75; // Moon radius in pixels
 const MOON_CENTER = { x: window.innerWidth - 115, y: 95 }; // Moon position
 
@@ -620,6 +621,10 @@ const updatePhysics = () => {
     }
   }
 
+  // Check moon proximity continuously
+  checkMoonProximity();
+
+  // NEW: Continuously check for landing during physics simulation
   if (isPhysicsActive.value && !isAstronautOnMoon.value) {
     checkMoonLanding();
   }
@@ -632,6 +637,56 @@ const updatePhysics = () => {
   ) {
     astronautVelocity.value = { x: 0, y: 0 };
     isPhysicsActive.value = false;
+  }
+};
+
+// Moon interaction functions
+const checkMoonProximity = () => {
+  if (!isPhysicsActive.value) return;
+
+  const moonElement = document.querySelector(".moon");
+  if (!moonElement || !container.value) return;
+
+  const moonRect = moonElement.getBoundingClientRect();
+  const containerRect = container.value.getBoundingClientRect();
+
+  const MOON_CENTER = {
+    x: moonRect.left - containerRect.left + moonRect.width / 2,
+    y: moonRect.top - containerRect.top + moonRect.height / 2,
+  };
+
+  const MOON_RADIUS = moonRect.width / 2;
+  const GRAVITY_RADIUS = MOON_RADIUS * 2; // Double the radius for gravity effect
+
+  const astronautCenter = {
+    x: astronautPosition.value.x + 25,
+    y: astronautPosition.value.y + 50,
+  };
+
+  const distance = Math.sqrt(
+    Math.pow(astronautCenter.x - MOON_CENTER.x, 2) +
+      Math.pow(astronautCenter.y - MOON_CENTER.y, 2)
+  );
+
+  // If astronaut is close to moon, apply moon gravity
+  if (distance < GRAVITY_RADIUS) {
+    const direction = {
+      x: MOON_CENTER.x - astronautCenter.x,
+      y: MOON_CENTER.y - astronautCenter.y,
+    };
+
+    const length = Math.sqrt(
+      direction.x * direction.x + direction.y * direction.y
+    );
+    if (length > 0) {
+      direction.x /= length;
+      direction.y /= length;
+
+      // Stronger gravity when closer to moon
+      const gravityStrength = MOON_GRAVITY * (1 - distance / GRAVITY_RADIUS);
+      astronautVelocity.value.x += direction.x * gravityStrength;
+      astronautVelocity.value.y += direction.y * gravityStrength;
+    }
   }
 };
 
@@ -1122,26 +1177,8 @@ onMounted(() => {
     cursor: grabbing !important;
     animation: none;
     transform: scale(1.15);
-    filter: drop-shadow(0 0 15px rgba(100, 200, 255, 0.8)) brightness(1.1);
+    filter: drop-shadow(0 0 8px rgba(100, 200, 255, 0.5));
     z-index: 1000;
-    transition: transform 0.1s ease, filter 0.1s ease;
-    &::after {
-      content: "";
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 80px;
-      height: 80px;
-      background: radial-gradient(
-        circle,
-        rgba(100, 200, 255, 0.2) 0%,
-        transparent 70%
-      );
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      animation: cursor-pulse 0.5s ease-out infinite;
-      pointer-events: none;
-    }
   }
 
   &:hover:not(.dragging) {
@@ -1154,16 +1191,6 @@ onMounted(() => {
   }
 }
 
-@keyframes cursor-pulse {
-  0% {
-    transform: translate(-50%, -50%) scale(0.8);
-    opacity: 0.8;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(1.2);
-    opacity: 0;
-  }
-}
 .night-illustration {
   position: absolute;
   width: 100%;

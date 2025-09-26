@@ -296,16 +296,16 @@ const disableFlashlight = () => {
 
 onMounted(() => {
   window.addEventListener("mousemove", updateCursor);
+  window.addEventListener("touchstart", enableFlashlight);
   window.addEventListener("touchmove", updateCursor);
-  // window.addEventListener("touchstart", enableFlashlight);
-  // window.addEventListener("touchend", disableFlashlight);
+  window.addEventListener("touchend", disableFlashlight);
 });
 
 onUnmounted(() => {
   window.removeEventListener("mousemove", updateCursor);
-  // window.removeEventListener("touchstart", enableFlashlight);
+  window.removeEventListener("touchstart", enableFlashlight);
   window.removeEventListener("touchmove", updateCursor);
-  // window.removeEventListener("touchend", disableFlashlight);
+  window.removeEventListener("touchend", disableFlashlight);
 });
 
 // scroll content ===========================
@@ -509,7 +509,6 @@ $primary-color: #4fc08d;
   font-family: "Kdam Thmor Pro", sans-serif;
   padding: 2rem;
   margin-bottom: 6rem;
-  pointer-events: none;
   @media (max-width: 991px) {
     margin-bottom: 2rem;
   }
@@ -583,7 +582,6 @@ $primary-color: #4fc08d;
 }
 
 .btn {
-  pointer-events: all !important;
   padding: 0.8rem 2rem;
   border: 2px solid $text-color;
   background: transparent;
@@ -805,24 +803,5 @@ $primary-color: #4fc08d;
 .hidden-elements-container.flashlight-off::before {
   opacity: 0;
   pointer-events: none;
-}
-
-.star-wrapper {
-  position: absolute;
-  top: 0;
-  pointer-events: auto;
-  touch-action: none;
-}
-
-.star-inner {
-  width: var(--size, 2px);
-  height: var(--size, 2px);
-}
-
-/* Mobile only: add bigger tap zone */
-@media (max-width: 768px) {
-  .star {
-    padding: 10px; /* invisible tap area */
-  }
 }
 </style>

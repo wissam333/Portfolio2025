@@ -151,7 +151,7 @@ const imageUrls = slugs.map(
   transform: scale(1.2);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 768) {
   .name {
     padding-bottom: 30px;
   }

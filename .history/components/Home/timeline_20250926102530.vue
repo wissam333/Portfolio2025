@@ -247,9 +247,11 @@ const getStarStyle = (n) => {
   position: absolute;
   bottom: 0;
   z-index: 1;
+  /* Fade effect */
   -webkit-mask-image: linear-gradient(to bottom, transparent, black 80%);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: cover;
+
   mask-image: linear-gradient(to bottom, transparent, black 80%);
   mask-repeat: no-repeat;
   mask-size: cover;

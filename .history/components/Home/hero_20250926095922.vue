@@ -509,7 +509,6 @@ $primary-color: #4fc08d;
   font-family: "Kdam Thmor Pro", sans-serif;
   padding: 2rem;
   margin-bottom: 6rem;
-  pointer-events: none;
   @media (max-width: 991px) {
     margin-bottom: 2rem;
   }
@@ -583,7 +582,6 @@ $primary-color: #4fc08d;
 }
 
 .btn {
-  pointer-events: all !important;
   padding: 0.8rem 2rem;
   border: 2px solid $text-color;
   background: transparent;
@@ -822,7 +820,7 @@ $primary-color: #4fc08d;
 /* Mobile only: add bigger tap zone */
 @media (max-width: 768px) {
   .star {
-    padding: 10px; /* invisible tap area */
+    padding: 20px; /* invisible tap area */
   }
 }
 </style>

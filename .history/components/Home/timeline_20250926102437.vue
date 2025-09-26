@@ -247,9 +247,11 @@ const getStarStyle = (n) => {
   position: absolute;
   bottom: 0;
   z-index: 1;
+  /* Fade effect */
   -webkit-mask-image: linear-gradient(to bottom, transparent, black 80%);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: cover;
+
   mask-image: linear-gradient(to bottom, transparent, black 80%);
   mask-repeat: no-repeat;
   mask-size: cover;
@@ -260,8 +262,9 @@ const getStarStyle = (n) => {
   cursor: pointer;
 
   &:active {
-    transform: scale(0.92);
-    box-shadow: 0 0 20px rgba(100, 255, 218, 0.6);
+    transform: scale(0.92); /* squish down */
+    box-shadow: 0 0 20px rgba(100, 255, 218, 0.6); /* glow effect */
   }
 }
+
 </style>

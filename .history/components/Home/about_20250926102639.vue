@@ -151,12 +151,9 @@ const imageUrls = slugs.map(
   transform: scale(1.2);
 }
 
-@media (max-width: 768px) {
-  .name {
-    padding-bottom: 30px;
-  }
+@media (max-width: 767.98px) {
   .content {
-    padding-inline-start: 0 !important;
+    padding-inline-start: 0;
   }
 
   .lead {

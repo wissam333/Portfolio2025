@@ -12,37 +12,38 @@
     <section class="experience-section">
       <h2 class="headline">Experience & Learning Journey</h2>
 
-      <Timeline :value="events" align="alternate" class="custom-timeline">
-        <!-- Custom marker -->
-        <template #marker="slotProps">
-          <span
-            class="timeline-marker"
-            :style="{ backgroundColor: slotProps.item.color }"
-          >
-            <Icon :name="slotProps.item.icon" class="icon" />
-          </span>
-        </template>
+      <div class="timeline-wrapper">
+        <div class="timeline-inner">
+          <Timeline :value="events" align="alternate" class="custom-timeline">
+            <!-- Custom marker -->
+            <template #marker="slotProps">
+              <span
+                class="timeline-marker"
+                :style="{ backgroundColor: slotProps.item.color }"
+              >
+                <Icon :name="slotProps.item.icon" class="icon" />
+              </span>
+            </template>
 
-        <!-- Custom content card -->
-        <template #content="slotProps">
-          <Card
-            class="timeline-card"
-            :data-aos="slotProps.index % 2 === 0 ? 'flip-right' : 'flip-left'"
-          >
-            <template #title>
-              {{ slotProps.item.title }}
+            <!-- Custom content -->
+            <template #content="slotProps">
+              <Card class="timeline-card">
+                <template #title>
+                  {{ slotProps.item.title }}
+                </template>
+                <template #subtitle>
+                  {{ slotProps.item.date }}
+                </template>
+                <template #content>
+                  <p>{{ slotProps.item.description }}</p>
+                </template>
+              </Card>
             </template>
-            <template #subtitle>
-              {{ slotProps.item.date }}
-            </template>
-            <template #content>
-              <p>{{ slotProps.item.description }}</p>
-            </template>
-          </Card>
-        </template>
-      </Timeline>
+          </Timeline>
+        </div>
+      </div>
 
-      <!-- Floating decorative particles -->
+      <!-- Background stars -->
       <div class="experience-stars">
         <span
           v-for="n in 30"
@@ -75,6 +76,22 @@ const getStarStyle = (n) => {
     animationDuration: `${Math.random() * 5 + 3}s`,
   };
 };
+
+onMounted(() => {
+  const cards = document.querySelectorAll(".timeline-card");
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+        }
+      });
+    },
+    { threshold: 0.2 }
+  );
+
+  cards.forEach((card) => observer.observe(card));
+});
 </script>
 
 <style scoped lang="scss">
@@ -247,21 +264,48 @@ const getStarStyle = (n) => {
   position: absolute;
   bottom: 0;
   z-index: 1;
+  /* Fade effect */
   -webkit-mask-image: linear-gradient(to bottom, transparent, black 80%);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: cover;
+
   mask-image: linear-gradient(to bottom, transparent, black 80%);
   mask-repeat: no-repeat;
   mask-size: cover;
 }
-.timeline-marker,
-.timeline-card {
-  transition: transform 0.15s ease, box-shadow 0.2s ease;
-  cursor: pointer;
 
-  &:active {
-    transform: scale(0.92);
-    box-shadow: 0 0 20px rgba(100, 255, 218, 0.6);
-  }
+.timeline-wrapper {
+  position: relative;
+  height: 80vh; /* container height */
+  overflow-y: auto;
+  padding-right: 0.5rem;
+
+  /* scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: #59bc90 #1a1a1a;
+}
+
+.timeline-inner {
+  position: sticky;
+  top: 0; /* sticks to top when scrolling */
+  padding: 1rem 0;
+}
+
+.custom-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Animate each card in */
+.timeline-card {
+  transform: translateY(30px);
+  opacity: 0;
+  transition: all 0.6s ease-out;
+}
+
+.timeline-card.is-visible {
+  transform: translateY(0);
+  opacity: 1;
 }
 </style>

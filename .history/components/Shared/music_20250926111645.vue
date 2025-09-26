@@ -196,9 +196,6 @@ const positionClass = computed(() => {
   background: rgba(255, 255, 255, 0.08);
   border-radius: 6px;
   overflow: hidden;
-  @media (max-width: 991px) {
-    height: 3px;
-  }
 }
 .bar {
   height: 100%;

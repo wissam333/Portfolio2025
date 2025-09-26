@@ -315,6 +315,7 @@ const orionLines = [
 const GRAVITY = 0;
 const FRICTION = 0.95;
 const BOUNCE = 0.5;
+const MOON_GRAVITY = 0.05;
 const MOON_RADIUS = 75; // Moon radius in pixels
 const MOON_CENTER = { x: window.innerWidth - 115, y: 95 }; // Moon position
 
@@ -620,6 +621,10 @@ const updatePhysics = () => {
     }
   }
 
+  // Check moon proximity continuously
+  // checkMoonProximity();
+
+  // NEW: Continuously check for landing during physics simulation
   if (isPhysicsActive.value && !isAstronautOnMoon.value) {
     checkMoonLanding();
   }

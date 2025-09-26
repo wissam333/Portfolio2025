@@ -206,14 +206,8 @@
               ></div>
 
               <!-- Legs -->
-              <div
-                class="astronaut-leg left"
-                :style="{ transform: `rotate(${leftLegRotation}deg)` }"
-              ></div>
-              <div
-                class="astronaut-leg right"
-                :style="{ transform: `rotate(${rightLegRotation}deg)` }"
-              ></div>
+              <div class="astronaut-leg left"></div>
+              <div class="astronaut-leg right"></div>
 
               <div class="astronaut-tank"></div>
 
@@ -283,8 +277,6 @@ const isPhysicsActive = ref(false);
 const dragOffset = ref({ x: 0, y: 0 });
 const lastPosition = ref({ x: 0, y: 0 });
 const lastTime = ref(0);
-const leftLegRotation = ref(0);
-const rightLegRotation = ref(0);
 
 // Easter egg refs
 const isAstronautOnMoon = ref(false);
@@ -314,7 +306,8 @@ const orionLines = [
 // Physics constants
 const GRAVITY = 0;
 const FRICTION = 0.95;
-const BOUNCE = 0.5;
+const BOUNCE = 0.8;
+const MOON_GRAVITY = 0.05;
 const MOON_RADIUS = 75; // Moon radius in pixels
 const MOON_CENTER = { x: window.innerWidth - 115, y: 95 }; // Moon position
 
@@ -581,10 +574,6 @@ const updatePhysics = () => {
   leftArmRotation.value = -30 + Math.sin(Date.now() * 0.01) * 20;
   rightArmRotation.value = 30 + Math.cos(Date.now() * 0.01) * 20;
 
-  //  leg animations
-  leftLegRotation.value = -10 + Math.sin(Date.now() * 0.015) * 15;
-  rightLegRotation.value = 10 + Math.cos(Date.now() * 0.015) * 15;
-
   // Boundary collision
   const containerRect = container.value?.getBoundingClientRect();
   if (containerRect) {
@@ -620,6 +609,10 @@ const updatePhysics = () => {
     }
   }
 
+  // Check moon proximity continuously
+  checkMoonProximity();
+
+  // NEW: Continuously check for landing during physics simulation
   if (isPhysicsActive.value && !isAstronautOnMoon.value) {
     checkMoonLanding();
   }
@@ -632,6 +625,56 @@ const updatePhysics = () => {
   ) {
     astronautVelocity.value = { x: 0, y: 0 };
     isPhysicsActive.value = false;
+  }
+};
+
+// Moon interaction functions
+const checkMoonProximity = () => {
+  if (!isPhysicsActive.value) return;
+
+  const moonElement = document.querySelector(".moon");
+  if (!moonElement || !container.value) return;
+
+  const moonRect = moonElement.getBoundingClientRect();
+  const containerRect = container.value.getBoundingClientRect();
+
+  const MOON_CENTER = {
+    x: moonRect.left - containerRect.left + moonRect.width / 2,
+    y: moonRect.top - containerRect.top + moonRect.height / 2,
+  };
+
+  const MOON_RADIUS = moonRect.width / 2;
+  const GRAVITY_RADIUS = MOON_RADIUS * 2; // Double the radius for gravity effect
+
+  const astronautCenter = {
+    x: astronautPosition.value.x + 25,
+    y: astronautPosition.value.y + 50,
+  };
+
+  const distance = Math.sqrt(
+    Math.pow(astronautCenter.x - MOON_CENTER.x, 2) +
+      Math.pow(astronautCenter.y - MOON_CENTER.y, 2)
+  );
+
+  // If astronaut is close to moon, apply moon gravity
+  if (distance < GRAVITY_RADIUS) {
+    const direction = {
+      x: MOON_CENTER.x - astronautCenter.x,
+      y: MOON_CENTER.y - astronautCenter.y,
+    };
+
+    const length = Math.sqrt(
+      direction.x * direction.x + direction.y * direction.y
+    );
+    if (length > 0) {
+      direction.x /= length;
+      direction.y /= length;
+
+      // Stronger gravity when closer to moon
+      const gravityStrength = MOON_GRAVITY * (1 - distance / GRAVITY_RADIUS);
+      astronautVelocity.value.x += direction.x * gravityStrength;
+      astronautVelocity.value.y += direction.y * gravityStrength;
+    }
   }
 };
 

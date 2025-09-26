@@ -173,8 +173,8 @@ const positionClass = computed(() => {
   transition: background 0.3s;
   @media (max-width: 991px) {
     padding: 0px;
-    width: 25px;
-    height: 25px;
+     width: 15px;
+    height: 15px;
   }
 }
 .play-btn:hover {
@@ -196,9 +196,6 @@ const positionClass = computed(() => {
   background: rgba(255, 255, 255, 0.08);
   border-radius: 6px;
   overflow: hidden;
-  @media (max-width: 991px) {
-    height: 3px;
-  }
 }
 .bar {
   height: 100%;
