@@ -1,0 +1,64 @@
+<template>
+  <div class="p-8 space-y-8">
+    <h1 class="text-2xl font-bold">UiTour Test Page</h1>
+
+    <button id="btn1" @click="startTour">Start Tour</button>
+    <div id="box1" class="demo-box">Box 1</div>
+    <div id="box2" class="demo-box">Box 2</div>
+    <div id="box3" class="demo-box">Box 3</div>
+
+    <!-- Tour Component -->
+    <ElementsTour ref="tour" v-model="tourActive" :steps="steps" />
+  </div>
+</template>
+
+<script setup>
+import { ref } from "vue";
+
+const tour = ref(null);
+const tourActive = ref(false);
+
+const steps = [
+  {
+    selector: "#btn1",
+    title: "Start Button",
+    content: "Click this button to begin.",
+  },
+  { selector: "#box1", title: "Box 1", content: "This is the first box." },
+  { selector: "#box2", title: "Box 2", content: "Second box content." },
+  { selector: "#box3", title: "Box 3", content: "Third box content." },
+];
+
+function startTour() {
+  tourActive.value = true;
+  // Start from first step programmatically after next tick
+  setTimeout(() => {
+    tour.value.start(0);
+  }, 50);
+}
+</script>
+
+<style scoped>
+.btn {
+  padding: 8px 16px;
+  background: #4cafef;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.btn:hover {
+  background: #2196f3;
+}
+
+.demo-box {
+  width: 200px;
+  height: 80px;
+  background: #e5e5e5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-weight: bold;
+}
+</style>
