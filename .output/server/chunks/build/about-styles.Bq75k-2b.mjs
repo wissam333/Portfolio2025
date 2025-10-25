@@ -1,6 +1,0 @@
-const about_vue_vue_type_style_index_0_scoped_3b7f6a88_lang = ".container-dark[data-v-3b7f6a88]{background:linear-gradient(180deg,#000,#0a0a0a)}@media (max-width:768px){.img-fluid[data-v-3b7f6a88]{height:300px!important;max-width:200px!important}}.content[data-v-3b7f6a88]{padding-inline-start:40px}.content .name[data-v-3b7f6a88]{background:linear-gradient(90deg,#246145a4,#64ffda 40%,#59bc90,#64ffda);background-clip:text;-webkit-background-clip:text;background-size:200% auto;font-size:4rem;font-weight:700;margin:1rem 0;position:relative;text-align:center;-webkit-text-fill-color:transparent;animation:textShine 4s linear infinite}.content .lead[data-v-3b7f6a88]{font-size:16px;margin-top:30px;text-align:center}.love-word[data-v-3b7f6a88]{color:#fdd4ed;cursor:pointer;font-weight:700;position:relative;transition:transform .2s ease}.love-word[data-v-3b7f6a88]:hover{transform:scale(1.2)}@media (max-width:768px){.name[data-v-3b7f6a88]{padding-bottom:30px}.content[data-v-3b7f6a88]{padding-inline-start:0!important}.lead[data-v-3b7f6a88]{margin-top:0!important}.py-5[data-v-3b7f6a88]{padding-bottom:0!important}}";
-
-const aboutStyles_Bq75k2b = [about_vue_vue_type_style_index_0_scoped_3b7f6a88_lang];
-
-export { aboutStyles_Bq75k2b as default };
-//# sourceMappingURL=about-styles.Bq75k-2b.mjs.map

@@ -1,0 +1,71 @@
+html {
+    scroll-behavior: smooth;
+}
+
+#awn-toast-container {
+    right: 40% !important;
+    top: 40% !important;
+
+    @media (max-width: 992px) {
+        right: 7% !important;
+        top: 40% !important;
+    }
+}
+
+.pointer {
+    cursor: pointer !important;
+}
+
+a {
+    text-decoration: none;
+}
+
+ul {
+    list-style: none;
+}
+
+@font-face {
+    font-family: Poppins;
+    src: url("../Fonts/en/Poppins-Black.ttf");
+    src: url("../Fonts/en/Poppins-Bold.ttf");
+    src: url("../Fonts/en/Poppins-Medium.ttf");
+    src: url("../Fonts/en/Poppins-Regular.ttf");
+    font-display: swap;
+    unicode-range: U+0000-00FF;
+}
+
+@font-face {
+    src: url("../Fonts/ar/The-Sans-Plain-alinma.ttf");
+    font-family: alinma;
+    font-display: swap;
+    unicode-range: U+0600-06FF;
+}
+
+.bodyAR {
+    font-family: Poppins, "Arial", "sans-serif";
+    direction: rtl;
+}
+
+.bodyEN {
+    direction: ltr;
+    font-family: Poppins, sans-serif;
+}
+
+.form-control:focus,
+.form-select:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.form-select-en {
+    background-position: right 0.75rem center !important;
+}
+
+.form-select-ar {
+    background-position: left 0.75rem center !important;
+}
+.form-control {
+    padding-right: 0 !important;
+    padding-inline-start: 0.75rem !important;
+    padding-inline-end: calc(0.75rem + 1.5rem) !important;
+}
