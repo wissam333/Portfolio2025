@@ -159,13 +159,8 @@ const changeLang = () => {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .social-icons {
-    top: 70px;
-    inset-inline-start: 10px;
-  }
-
   .icons-inner {
-    padding: 7px;
+    padding: 7px ;
     gap: 7px;
   }
 

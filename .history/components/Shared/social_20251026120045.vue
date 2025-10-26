@@ -160,7 +160,7 @@ const changeLang = () => {
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .social-icons {
-    top: 70px;
+    top: 85px;
     inset-inline-start: 10px;
   }
 

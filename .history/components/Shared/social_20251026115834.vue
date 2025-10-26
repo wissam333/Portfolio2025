@@ -159,14 +159,9 @@ const changeLang = () => {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .social-icons {
-    top: 70px;
-    inset-inline-start: 10px;
-  }
-
   .icons-inner {
-    padding: 7px;
-    gap: 7px;
+    padding: 14px ;
+    gap: 14px;
   }
 
   .icons-container {
@@ -179,8 +174,8 @@ const changeLang = () => {
   }
 
   .social-icon {
-    width: 20px;
-    height: 20px;
+    width: 10px;
+    height: 10px;
   }
 }
 </style>

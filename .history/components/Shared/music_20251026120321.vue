@@ -1,22 +1,20 @@
 <template>
-  <div
-    :class="['music-box', positionClass]"
-    data-aos="fade-left"
-    data-aos-delay="1200"
-  >
+  <div class="music-box" data-aos="fade-left" data-aos-delay="1200">
     <div class="music-inner">
       <!-- Header -->
       <div class="header">
         <svg class="icon" viewBox="0 0 24 24">
           <path d="M12 3v10.55A4 4 0 1014 17V7h4V3z" />
         </svg>
-        <span class="title">Now Playing</span>
+        <span class="title">{{
+          $i18n.locale === "ar" ? "التشغيل الآن" : "Now Playing"
+        }}</span>
       </div>
 
       <!-- Song Info -->
       <div class="song-info">
         <span class="name">{{ songName }}</span>
-        <button class="play-btn" @click="togglePlay">
+        <button name="play-btn" class="play-btn" @click="togglePlay">
           <svg v-if="!isPlaying" class="btn-icon" viewBox="0 0 24 24">
             <path d="M8 5v14l11-7z" />
           </svg>
@@ -75,19 +73,6 @@ onUnmounted(() => {
   audio.pause();
   audio.removeEventListener("timeupdate", updateProgress);
 });
-
-const positionClass = computed(() => {
-  switch (props.position) {
-    case "top-left":
-      return "pos-top-left";
-    case "top-right":
-      return "pos-top-right";
-    case "bottom-right":
-      return "pos-bottom-right";
-    default:
-      return "pos-bottom-left";
-  }
-});
 </script>
 
 <style lang="scss" scoped>
@@ -95,22 +80,12 @@ const positionClass = computed(() => {
   position: fixed;
   z-index: 999;
   pointer-events: none;
-}
-.pos-bottom-left {
   bottom: 20px;
-  left: 20px;
-}
-.pos-bottom-right {
-  bottom: 20px;
-  right: 20px;
-}
-.pos-top-left {
-  top: 20px;
-  left: 20px;
-}
-.pos-top-right {
-  top: 20px;
-  right: 20px;
+  inset-inline-end: 20px;
+  @media (max-width: 991px) {
+    bottom: 10px;
+    inset-inline-end: 10px;
+  }
 }
 
 .music-inner {
@@ -127,7 +102,9 @@ const positionClass = computed(() => {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.21),
     0 0 25px rgba(140, 180, 255, 0.045);
   color: #e6f0ff;
-  font-family: "Inter", sans-serif;
+  @media (max-width: 991px) {
+    min-width: 160px;
+  }
 }
 
 /* Header */
@@ -168,6 +145,11 @@ const positionClass = computed(() => {
   padding: 6px;
   cursor: pointer;
   transition: background 0.3s;
+  @media (max-width: 991px) {
+    padding: 0px;
+    width: 25px;
+    height: 25px;
+  }
 }
 .play-btn:hover {
   background: rgba(255, 255, 255, 0.2);
@@ -176,6 +158,10 @@ const positionClass = computed(() => {
   width: 20px;
   height: 20px;
   fill: #fff;
+  @media (max-width: 991px) {
+    width: 15px;
+    height: 15px;
+  }
 }
 
 /* Progress */
@@ -184,6 +170,9 @@ const positionClass = computed(() => {
   background: rgba(255, 255, 255, 0.08);
   border-radius: 6px;
   overflow: hidden;
+  @media (max-width: 991px) {
+    height: 3px;
+  }
 }
 .bar {
   height: 100%;

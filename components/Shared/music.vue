@@ -82,6 +82,10 @@ onUnmounted(() => {
   pointer-events: none;
   bottom: 20px;
   inset-inline-end: 20px;
+  @media (max-width: 991px) {
+    bottom: 10px;
+    inset-inline-end: 10px;
+  }
 }
 
 .music-inner {

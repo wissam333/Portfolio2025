@@ -51,9 +51,6 @@ let total = ref(6);
   padding: 12px 16px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 25px rgba(140, 180, 255, 0.2);
   color: #e6f0ff;
-  @media (max-width: 768px) {
-    padding: 6px 8px;
-  }
 }
 
 /* Header */
