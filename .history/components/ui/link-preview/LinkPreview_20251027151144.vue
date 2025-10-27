@@ -222,9 +222,9 @@ const previewStyle = computed<CSSProperties>(() => {
 
 // Image specific styling
 const imageStyle = computed<CSSProperties>(() => ({
-  width: `200px`,
-  height: `auto`,
-  objectFit: "contain",
+  width: `${props.width}px`,
+  height: `${props.height}px`,
+  objectFit: "cover",
 }));
 
 // Pop animation class

@@ -41,9 +41,7 @@ const createSnowflake = (x = null, y = null) => {
 
 const addSnowflake = (event) => {
   if (activeSnowflakes.value.length >= MAX_SNOWFLAKES) return;
-  if (!useEasterEggs().value.find((e) => e == 7)) {
-    useEasterEggs().value.push(7);
-  }
+
   // Get viewport height
   const vh = window.innerHeight;
 

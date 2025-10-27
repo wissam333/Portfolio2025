@@ -222,7 +222,7 @@ const previewStyle = computed<CSSProperties>(() => {
 
 // Image specific styling
 const imageStyle = computed<CSSProperties>(() => ({
-  width: `200px`,
+  width: `auto`,
   height: `auto`,
   objectFit: "contain",
 }));

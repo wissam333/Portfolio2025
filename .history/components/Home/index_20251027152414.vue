@@ -1,6 +1,6 @@
 <template>
   <div style="overflow: hidden; background-color: #000">
-    <home-new></home-new>
+    <elements-clouds></elements-clouds>
     <home-hero></home-hero>
     <home-timeline></home-timeline>
     <home-about hydrate-on-visible></home-about>

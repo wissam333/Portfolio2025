@@ -14,7 +14,6 @@
     </div>
   </div>
 </template>
-
 <script setup>
 const activeSnowflakes = ref([]);
 const MAX_SNOWFLAKES = 80;
@@ -27,7 +26,7 @@ const createSnowflake = (x = null, y = null) => {
   return {
     id,
     x: x !== null ? x : Math.random() * 100,
-    y: y !== null ? y : -2, // Start slightly above viewport
+    y: y !== null ? y : -10,
     size,
     opacity: 0.7 + Math.random() * 0.3,
     rotation: Math.random() * 360,
@@ -41,24 +40,15 @@ const createSnowflake = (x = null, y = null) => {
 
 const addSnowflake = (event) => {
   if (activeSnowflakes.value.length >= MAX_SNOWFLAKES) return;
-  if (!useEasterEggs().value.find((e) => e == 7)) {
-    useEasterEggs().value.push(7);
-  }
-  // Get viewport height
-  const vh = window.innerHeight;
 
-  // Calculate position in vh units
-  const x = (event.clientX / window.innerWidth) * 100; // Percentage for horizontal
-  const y = event.clientY / vh; // Convert to vh units
+  const rect = container.value.getBoundingClientRect();
+  const x = ((event.clientX - rect.left) / rect.width) * 100;
+  const y = ((event.clientY - rect.top) / rect.height) * 100;
 
-  // Only add snowflake if click is within the first 20vh
-  if (y <= 20) {
-    const snowflake = createSnowflake(x, y);
-    snowflake.fallSpeed *= 1.5; // Make clicked snowflakes fall faster
-    activeSnowflakes.value.push(snowflake);
-  }
+  const snowflake = createSnowflake(x, y);
+  snowflake.fallSpeed *= 1.5; // Make clicked snowflakes fall faster
+  activeSnowflakes.value.push(snowflake);
 };
-
 // Snowflake animation with requestAnimationFrame
 const animateSnowflakes = (timestamp) => {
   // Update snowflakes
@@ -70,7 +60,7 @@ const animateSnowflakes = (timestamp) => {
     }
 
     // Update position and rotation
-    snowflake.y += snowflake.fallSpeed * 0.05; // This adds vh units
+    snowflake.y += snowflake.fallSpeed * 0.05;
     snowflake.x += snowflake.drift;
     snowflake.rotation += snowflake.rotationSpeed;
 
@@ -81,13 +71,13 @@ const animateSnowflakes = (timestamp) => {
     // Update style efficiently
     snowflake.style = {
       left: `${snowflake.x}%`,
-      top: `${snowflake.y}vh`, // Use vh units for exact cursor position
+      top: `${snowflake.y}%`,
       opacity: snowflake.opacity,
       transform: `rotate(${snowflake.rotation}deg)`,
       transition: "none",
     };
 
-    return snowflake.y < 120; // Remove if fallen beyond 120vh
+    return snowflake.y < 110; // Remove if fallen too far
   });
 
   requestAnimationFrame(animateSnowflakes);
@@ -97,7 +87,6 @@ onMounted(() => {
   requestAnimationFrame(animateSnowflakes);
 });
 </script>
-
 <style lang="scss" scoped>
 .snowflakes-container {
   height: 20vh;
@@ -107,19 +96,16 @@ onMounted(() => {
   width: 100%;
   background-color: transparent;
   z-index: 13;
-  cursor: pointer;
 }
-
 /* Optimized Snowflakes */
 .snowflakes-layer {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 100vh;
+  height: 20vh;
   pointer-events: none;
   z-index: 13;
-  overflow: visible;
 }
 
 .snowflake {

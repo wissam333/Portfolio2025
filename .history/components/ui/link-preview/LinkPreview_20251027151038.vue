@@ -30,7 +30,7 @@
             :src="currentPreviewSrc"
             :width="width"
             :height="height"
-            class="size-full rounded-lg"
+            class="size-full rounded-lg object-cover"
             :style="imageStyle"
             alt="preview"
             @load="handleImageLoad"
@@ -222,9 +222,8 @@ const previewStyle = computed<CSSProperties>(() => {
 
 // Image specific styling
 const imageStyle = computed<CSSProperties>(() => ({
-  width: `200px`,
-  height: `auto`,
-  objectFit: "contain",
+  width: `${props.width}px`,
+  height: `${props.height}px`,
 }));
 
 // Pop animation class

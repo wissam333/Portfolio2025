@@ -100,7 +100,6 @@ function blinkCursor() {
   border: 2px solid #fff;
   text-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
   opacity: 0;
-  display: none;
   transform: translateY(-20px) scale(0.8);
   transition: all 1s ease;
 }
@@ -112,7 +111,6 @@ function blinkCursor() {
 }
 
 .easter-egg.hide {
-  display: none;
   opacity: 0;
   transform: translateY(-40px) scale(0.6);
 }

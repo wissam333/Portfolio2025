@@ -27,7 +27,7 @@ const createSnowflake = (x = null, y = null) => {
   return {
     id,
     x: x !== null ? x : Math.random() * 100,
-    y: y !== null ? y : -2, // Start slightly above viewport
+    y: y !== null ? y : -10,
     size,
     opacity: 0.7 + Math.random() * 0.3,
     rotation: Math.random() * 360,
@@ -41,19 +41,20 @@ const createSnowflake = (x = null, y = null) => {
 
 const addSnowflake = (event) => {
   if (activeSnowflakes.value.length >= MAX_SNOWFLAKES) return;
-  if (!useEasterEggs().value.find((e) => e == 7)) {
-    useEasterEggs().value.push(7);
-  }
-  // Get viewport height
-  const vh = window.innerHeight;
 
-  // Calculate position in vh units
-  const x = (event.clientX / window.innerWidth) * 100; // Percentage for horizontal
-  const y = event.clientY / vh; // Convert to vh units
+  const rect = container.value.getBoundingClientRect();
+  const x = ((event.clientX - rect.left) / rect.width) * 100;
 
-  // Only add snowflake if click is within the first 20vh
-  if (y <= 20) {
-    const snowflake = createSnowflake(x, y);
+  // Calculate Y position relative to the 20vh container, but convert to vh units
+  const clickY = event.clientY;
+  const containerTop = rect.top;
+  const containerHeight = rect.height;
+
+  const relativeY = ((clickY - containerTop) / containerHeight) * 100;
+
+  // Only add snowflake if click is within the first 20vh container
+  if (clickY >= containerTop && clickY <= containerTop + containerHeight) {
+    const snowflake = createSnowflake(x, relativeY);
     snowflake.fallSpeed *= 1.5; // Make clicked snowflakes fall faster
     activeSnowflakes.value.push(snowflake);
   }
@@ -70,7 +71,7 @@ const animateSnowflakes = (timestamp) => {
     }
 
     // Update position and rotation
-    snowflake.y += snowflake.fallSpeed * 0.05; // This adds vh units
+    snowflake.y += snowflake.fallSpeed * 0.05;
     snowflake.x += snowflake.drift;
     snowflake.rotation += snowflake.rotationSpeed;
 
@@ -78,16 +79,16 @@ const animateSnowflakes = (timestamp) => {
     if (snowflake.x > 105) snowflake.x = -5;
     if (snowflake.x < -5) snowflake.x = 105;
 
-    // Update style efficiently
+    // Update style efficiently - use % for X and vh for Y
     snowflake.style = {
       left: `${snowflake.x}%`,
-      top: `${snowflake.y}vh`, // Use vh units for exact cursor position
+      top: `${snowflake.y}vh`, // Use vh units for vertical positioning
       opacity: snowflake.opacity,
       transform: `rotate(${snowflake.rotation}deg)`,
       transition: "none",
     };
 
-    return snowflake.y < 120; // Remove if fallen beyond 120vh
+    return snowflake.y < 200; // Allow snowflakes to fall beyond 20vh (up to 200vh)
   });
 
   requestAnimationFrame(animateSnowflakes);
@@ -112,11 +113,11 @@ onMounted(() => {
 
 /* Optimized Snowflakes */
 .snowflakes-layer {
-  position: fixed;
+  position: fixed; /* Changed to fixed to allow snowflakes to be visible beyond container */
   top: 0;
   left: 0;
   width: 100%;
-  height: 100vh;
+  height: 100vh; /* Full viewport height */
   pointer-events: none;
   z-index: 13;
   overflow: visible;
