@@ -14,11 +14,9 @@ onMounted(() => {
   let lastY = null;
   let lastZ = null;
   let lastTime = 0;
-  const shakeThreshold = 40;
-  const minInterval = 2000;
-  let lastShakeTime = 0;
+  const shakeThreshold = 40; // higher = less sensitive
 
-  function handleMotion(event) {
+  const handleMotion = (event) => {
     const { x, y, z } = event.accelerationIncludingGravity;
     const currentTime = Date.now();
 
@@ -34,9 +32,8 @@ onMounted(() => {
       const speed =
         (Math.abs(x + y + z - lastX - lastY - lastZ) / deltaTime) * 10000;
 
-      if (speed > shakeThreshold && currentTime - lastShakeTime > minInterval) {
-        lastShakeTime = currentTime;
-        console.log("💥 Strong shake detected!");
+      if (speed > shakeThreshold) {
+        // prevent multiple redirects
         window.removeEventListener("devicemotion", handleMotion);
         navigateTo("/secretpage");
       }

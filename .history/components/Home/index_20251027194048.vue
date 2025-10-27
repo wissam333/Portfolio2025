@@ -38,7 +38,7 @@ onMounted(() => {
         lastShakeTime = currentTime;
         console.log("💥 Strong shake detected!");
         window.removeEventListener("devicemotion", handleMotion);
-        navigateTo("/secretpage");
+        router.push("/secretpage");
       }
 
       lastTime = currentTime;
