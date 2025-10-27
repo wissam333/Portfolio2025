@@ -6,26 +6,24 @@
         <div class="col-lg-6">
           <div class="content">
             <UiSparklesText
-              text="About Me"
+              :text="$i18n.locale === 'ar' ? 'نبذة عني' : 'About Me'"
               :colors="{ first: '#ff6ec4', second: '#7873f5' }"
               :sparkles-count="10"
               class="name sparkles-name"
               aria-hidden="true"
             />
 
-            <span class="name plain-name" aria-hidden="false">
-              Wissam Najjom
-            </span>
-
             <p class="lead">
-              I am a highly motivated and passionate person with a keen interest
-              in front-end web development. I am a quick learner and have
-              developed my skills through self-learning, I am proficient in
-              problem-solving and enjoy finding creative solutions to complex
-              issues. I am a team player and enjoy collaborating with others to
-              achieve common goals, And most important I
-              <span class="love-word" @click="shootConfetti">love</span>
-              what I do !
+              {{
+                $i18n.locale === "ar"
+                  ? "أنا شخص متحمس وشغوف، ولديّ اهتمام كبير بتطوير واجهات الويب الأمامية. أتعلم بسرعة، وقد طورت مهاراتي من خلال التعلم الذاتي. أجيد حل المشكلات، وأستمتع بإيجاد حلول إبداعية للقضايا المعقدة. أعمل بروح الفريق، وأستمتع بالتعاون مع الآخرين لتحقيق أهداف مشتركة، والأهم من ذلك،"
+                  : "I am a highly motivated and passionate person with a keen interest in front-end web development. I am a quick learner and have developed my skills through self-learning, I am proficient in problem-solving and enjoy finding creative solutions to complex issues. I am a team player and enjoy collaborating with others to achieve common goals, And most important I"
+              }}
+
+              <span class="love-word" @click="shootConfetti">
+                {{ $i18n.locale === "ar" ? "أحب" : "love" }}
+              </span>
+              {{ $i18n.locale === "ar" ? "ما أفعله !" : "what I do !" }}
             </p>
           </div>
         </div>
@@ -155,26 +153,12 @@ const imageUrls = slugs.map(
   transform: scale(1.2);
 }
 
-.plain-name {
-  display: none !important;
-  width: 100%;
-}
-
-@media (max-width: 767.98px) {
-  // .sparkles-name {
-  //   display: none !important;
-  // }
-
-  .plain-name {
-    display: inline-block !important;
-    font-size: 2.2rem !important;
-    -webkit-text-fill-color: unset;
-    background: none;
-    -webkit-background-clip: initial;
-    color: #fff;
+@media (max-width: 768px) {
+  .name {
+    padding-bottom: 30px;
   }
   .content {
-    padding-inline-start: 0;
+    padding-inline-start: 0 !important;
   }
 
   .lead {

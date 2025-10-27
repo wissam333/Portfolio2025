@@ -17,7 +17,7 @@
 
 <script setup>
 const activeSnowflakes = ref([]);
-const MAX_SNOWFLAKES = 80;
+const MAX_SNOWFLAKES = 10;
 const container = ref(null);
 let snowflakeId = 0;
 
@@ -106,7 +106,7 @@ onMounted(() => {
   left: 0;
   width: 100%;
   background-color: transparent;
-  z-index: 13;
+  z-index: 15;
   cursor: pointer;
 }
 
@@ -118,7 +118,7 @@ onMounted(() => {
   width: 100%;
   height: 100vh;
   pointer-events: none;
-  z-index: 13;
+  z-index: 15;
   overflow: visible;
 }
 

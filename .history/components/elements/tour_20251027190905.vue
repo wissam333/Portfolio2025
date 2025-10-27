@@ -47,7 +47,7 @@
           <button
             class="btn btn-sm btn-light"
             @click="skip"
-            v-if="stepIndex !== 6"
+            v-if="stepIndex === 6"
           >
             {{ $i18n.locale === "ar" ? "تخطي" : "Skip" }}
           </button>

@@ -66,8 +66,8 @@ let steps = ref([
   },
   {
     selector: ".snowflakes-container",
-    title: "seventh Easter Egg",
-    titleAr: "البيضة السابعة",
+    title: "Sixth Easter Egg",
+    titleAr: "البيضة السادسة",
     content: "Click on the top of the page",
     contentAr: "انقر على أعلى الصفحة",
   },

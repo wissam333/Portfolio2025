@@ -21,36 +21,23 @@
       tabindex="-1"
     >
       <div class="tour-header">
-        <strong>{{
-          $i18n.locale === "ar" ? currentStep.titleAr : currentStep.title
-        }}</strong>
+        <strong>{{ currentStep.title }}</strong>
       </div>
 
-      <div
-        class="tour-body"
-        v-html="
-          $i18n.locale === 'ar' ? currentStep.contentAr : currentStep.content
-        "
-      ></div>
+      <div class="tour-body" v-html="currentStep.content"></div>
 
       <div
         class="tour-controls d-flex justify-content-between align-items-center"
       >
         <div>
           <button
-            class="btn btn-sm btn-secondary mx-2"
+            class="btn btn-sm btn-secondary me-2"
             @click="prev"
             :disabled="stepIndex === 0"
           >
             {{ $i18n.locale === "ar" ? "السابق" : "Back" }}
           </button>
-          <button
-            class="btn btn-sm btn-light"
-            @click="skip"
-            v-if="stepIndex !== 6"
-          >
-            {{ $i18n.locale === "ar" ? "تخطي" : "Skip" }}
-          </button>
+          <button class="btn btn-sm btn-light" @click="skip">Skip</button>
         </div>
         <div>
           <button v-if="!isLast" class="btn btn-sm btn-success" @click="next">

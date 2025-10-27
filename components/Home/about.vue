@@ -6,7 +6,7 @@
         <div class="col-lg-6">
           <div class="content">
             <UiSparklesText
-              :text="$i18n.locale === 'ar' ? 'من أنا؟' : 'About Me'"
+              :text="$i18n.locale === 'ar' ? 'نبذة عني' : 'About Me'"
               :colors="{ first: '#ff6ec4', second: '#7873f5' }"
               :sparkles-count="10"
               class="name sparkles-name"

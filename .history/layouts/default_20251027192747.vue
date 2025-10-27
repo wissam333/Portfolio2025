@@ -8,7 +8,7 @@
         <SharedMusic :position="`bottom-right`"></SharedMusic>
         <SharedAstronaut @startTour="tourRef.start()"></SharedAstronaut>
         <ElementsTour ref="tourRef" :steps="steps"></ElementsTour>
-        <div>
+        <div >
           <slot />
         </div>
       </div>
@@ -64,12 +64,12 @@ let steps = ref([
     content: "Open dev tools",
     contentAr: "افتح أدوات المطور",
   },
-  {
-    selector: ".snowflakes-container",
-    title: "seventh Easter Egg",
-    titleAr: "البيضة السابعة",
+    {
+    selector: "",
+    title: "Sixth Easter Egg",
+    titleAr: "البيضة السادسة",
     content: "Click on the top of the page",
-    contentAr: "انقر على أعلى الصفحة",
+    contentAr: "افتح أدوات المطور",
   },
 ]);
 </script>

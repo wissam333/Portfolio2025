@@ -38,17 +38,13 @@
       >
         <div>
           <button
-            class="btn btn-sm btn-secondary mx-2"
+            class="btn btn-sm btn-secondary me-2"
             @click="prev"
             :disabled="stepIndex === 0"
           >
             {{ $i18n.locale === "ar" ? "السابق" : "Back" }}
           </button>
-          <button
-            class="btn btn-sm btn-light"
-            @click="skip"
-            v-if="stepIndex !== 6"
-          >
+          <button class="btn btn-sm btn-light" @click="skip">
             {{ $i18n.locale === "ar" ? "تخطي" : "Skip" }}
           </button>
         </div>

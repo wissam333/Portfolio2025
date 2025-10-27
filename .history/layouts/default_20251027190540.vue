@@ -1,16 +1,14 @@
 <template>
-  <div>
+  <div :class="locale === 'ar' ? 'bodyAR' : 'bodyEN'">
     <ClientOnly>
+      <SharedEggCounter :position="`top-left`"></SharedEggCounter>
+      <SharedSocial :position="`top-left`"></SharedSocial>
+      <SharedDevTools></SharedDevTools>
+      <SharedMusic :position="`bottom-right`"></SharedMusic>
+      <SharedAstronaut @startTour="tourRef.start()"></SharedAstronaut>
+      <ElementsTour ref="tourRef" :steps="steps"></ElementsTour>
       <div :class="locale === 'ar' ? 'bodyAR' : 'bodyEN'">
-        <SharedEggCounter :position="`top-left`"></SharedEggCounter>
-        <SharedSocial :position="`top-left`"></SharedSocial>
-        <SharedDevTools></SharedDevTools>
-        <SharedMusic :position="`bottom-right`"></SharedMusic>
-        <SharedAstronaut @startTour="tourRef.start()"></SharedAstronaut>
-        <ElementsTour ref="tourRef" :steps="steps"></ElementsTour>
-        <div>
-          <slot />
-        </div>
+        <slot />
       </div>
     </ClientOnly>
   </div>
@@ -63,13 +61,6 @@ let steps = ref([
     titleAr: "البيضة السادسة",
     content: "Open dev tools",
     contentAr: "افتح أدوات المطور",
-  },
-  {
-    selector: ".snowflakes-container",
-    title: "seventh Easter Egg",
-    titleAr: "البيضة السابعة",
-    content: "Click on the top of the page",
-    contentAr: "انقر على أعلى الصفحة",
   },
 ]);
 </script>
