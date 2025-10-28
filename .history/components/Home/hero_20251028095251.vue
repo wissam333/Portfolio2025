@@ -320,7 +320,9 @@ const disableFlashlight = () => {
 
 onMounted(() => {
   window.addEventListener("mousemove", updateCursor);
-  window.addEventListener("touchmove", updateCursor, { passive: true });
+  window.addEventListener("touchmove", updateCursor);
+  // window.addEventListener("touchstart", enableFlashlight);
+  // window.addEventListener("touchend", disableFlashlight);
 });
 
 onUnmounted(() => {
@@ -358,7 +360,7 @@ const handleScroll = () => {
 };
 
 onMounted(() => {
-  window.addEventListener("scroll", handleScroll, { passive: true });
+  window.addEventListener("scroll", handleScroll);
 });
 
 onUnmounted(() => {
@@ -411,7 +413,6 @@ $primary-color: #4fc08d;
   animation-name: fall;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
-  transform: translate3d(0, 0, 0);
 }
 
 .star.paused {
@@ -427,7 +428,7 @@ $primary-color: #4fc08d;
   background: #fff;
   border-radius: 50%;
   opacity: 0.9;
-  box-shadow: 0 0 6px #fff, 0 0 12px rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0 3px #fff; /* Reduced */
   transform-origin: center center;
   transition: transform 0.28s ease, box-shadow 0.28s ease, opacity 0.28s ease;
   will-change: transform, opacity;

@@ -320,7 +320,9 @@ const disableFlashlight = () => {
 
 onMounted(() => {
   window.addEventListener("mousemove", updateCursor);
-  window.addEventListener("touchmove", updateCursor, { passive: true });
+  window.addEventListener("touchmove", updateCursor);
+  // window.addEventListener("touchstart", enableFlashlight);
+  // window.addEventListener("touchend", disableFlashlight);
 });
 
 onUnmounted(() => {
@@ -358,7 +360,7 @@ const handleScroll = () => {
 };
 
 onMounted(() => {
-  window.addEventListener("scroll", handleScroll, { passive: true });
+  window.addEventListener("scroll", handleScroll);
 });
 
 onUnmounted(() => {

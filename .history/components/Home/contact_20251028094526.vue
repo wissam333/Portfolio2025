@@ -768,7 +768,7 @@ const triggerMoonLandingEffects = () => {
   });
 
   // Create moon particles
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < 30; i++) {
     createMoonParticle();
   }
 };
@@ -890,7 +890,6 @@ onMounted(() => {
 .star {
   position: absolute;
   background-color: white;
-  will-change: opacity;
   border-radius: 50%;
   animation: twinkle 5s infinite alternate;
 }

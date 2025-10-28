@@ -1,7 +1,7 @@
 <template>
-  <div class=".body" :dir="$i18n.locale === 'ar' ? 'rtl' : 'ltr'">
+  <div>
     <canvas ref="canvas"></canvas>
-    <h1 class="fw-bold">
+    <h1>
       {{ $i18n.locale === "ar" ? "لقد فعلتها!" : "You did it!" }}
     </h1>
   </div>
@@ -896,7 +896,7 @@ function initFluidSimulation() {
 </script>
 
 <style scoped>
-.body {
+body {
   margin: 0;
   position: absolute;
   width: 100%;
@@ -905,7 +905,7 @@ function initFluidSimulation() {
 
 canvas {
   width: 100%;
-  height: 100vh;
+  height: 100%;
   display: block;
 }
 
@@ -917,6 +917,7 @@ h1 {
   color: #000;
   font-size: 40px;
   user-select: none;
+  font-family: "Amatic SC", cursive;
   text-wrap: nowrap;
   text-align: center;
   pointer-events: none;

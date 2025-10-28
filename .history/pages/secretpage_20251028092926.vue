@@ -917,6 +917,7 @@ h1 {
   color: #000;
   font-size: 40px;
   user-select: none;
+  font-family: "Amatic SC", cursive;
   text-wrap: nowrap;
   text-align: center;
   pointer-events: none;

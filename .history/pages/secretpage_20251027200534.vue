@@ -1,7 +1,8 @@
+--- FILE: pages/secret.vue ---
 <template>
-  <div class=".body" :dir="$i18n.locale === 'ar' ? 'rtl' : 'ltr'">
+  <div class="secret-page">
     <canvas ref="canvas"></canvas>
-    <h1 class="fw-bold">
+    <h1>
       {{ $i18n.locale === "ar" ? "لقد فعلتها!" : "You did it!" }}
     </h1>
   </div>
@@ -9,28 +10,25 @@
 
 <script setup>
 definePageMeta({
-  layout: "empty",
+  layout: false, // disables Nuxt layout
 });
 
-const canvas = ref(null);
+import { onMounted } from "vue";
 
 onMounted(() => {
-  initFluidSimulation();
-});
-
-function initFluidSimulation() {
-  if (!canvas.value) return;
-
-  const canvasEl = canvas.value;
-  const ctx = canvasEl.getContext("webgl");
-
-  if (!ctx) {
-    console.error("WebGL not supported");
-    return;
+  const canvas = document.createElement("canvas");
+  const existingCanvas = document.querySelector("canvas");
+  if (existingCanvas) {
+    existingCanvas.replaceWith(canvas);
   }
+  document.querySelector(".secret-page").prepend(canvas);
 
-  canvasEl.width = canvasEl.clientWidth;
-  canvasEl.height = canvasEl.clientHeight;
+  // Your WebGL script (original JS code) goes here ↓
+  // ------------------------------------------------
+  ("use strict");
+
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
 
   let config = {
     TEXTURE_DOWNSAMPLE: 1,
@@ -45,7 +43,7 @@ function initFluidSimulation() {
   let pointers = [];
   let splatStack = [];
 
-  const { gl, ext } = getWebGLContext(canvasEl);
+  const { gl, ext } = getWebGLContext(canvas);
 
   function getWebGLContext(canvas) {
     const params = {
@@ -156,8 +154,7 @@ function initFluidSimulation() {
     );
 
     const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-    if (status != gl.FRAMEBUFFER_COMPLETE) return false;
-    return true;
+    return status == gl.FRAMEBUFFER_COMPLETE;
   }
 
   function pointerPrototype() {
@@ -780,12 +777,12 @@ function initFluidSimulation() {
     gl.uniform1i(splatProgram.uniforms.uTarget, velocity.read[2]);
     gl.uniform1f(
       splatProgram.uniforms.aspectRatio,
-      canvasEl.width / canvasEl.height
+      canvas.width / canvas.height
     );
     gl.uniform2f(
       splatProgram.uniforms.point,
-      x / canvasEl.width,
-      1.0 - y / canvasEl.height
+      x / canvas.width,
+      1.0 - y / canvas.height
     );
     gl.uniform3f(splatProgram.uniforms.color, dx, -dy, 1.0);
     gl.uniform1f(splatProgram.uniforms.radius, config.SPLAT_RADIUS);
@@ -810,8 +807,8 @@ function initFluidSimulation() {
         Math.random() * 10,
         Math.random() * 10,
       ];
-      const x = canvasEl.width * Math.random();
-      const y = canvasEl.height * Math.random();
+      const x = canvas.width * Math.random();
+      const y = canvas.height * Math.random();
       const dx = 1000 * (Math.random() - 0.5);
       const dy = 1000 * (Math.random() - 0.5);
       splat(x, y, dx, dy, color);
@@ -820,17 +817,16 @@ function initFluidSimulation() {
 
   function resizeCanvas() {
     if (
-      canvasEl.width != canvasEl.clientWidth ||
-      canvasEl.height != canvasEl.clientHeight
+      canvas.width != canvas.clientWidth ||
+      canvas.height != canvas.clientHeight
     ) {
-      canvasEl.width = canvasEl.clientWidth;
-      canvasEl.height = canvasEl.clientHeight;
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientHeight;
       initFramebuffers();
     }
   }
 
-  // Event listeners
-  canvasEl.addEventListener("mousemove", (e) => {
+  canvas.addEventListener("mousemove", (e) => {
     pointers[0].moved = pointers[0].down;
     pointers[0].dx = (e.offsetX - pointers[0].x) * 10.0;
     pointers[0].dy = (e.offsetY - pointers[0].y) * 10.0;
@@ -838,7 +834,7 @@ function initFluidSimulation() {
     pointers[0].y = e.offsetY;
   });
 
-  canvasEl.addEventListener(
+  canvas.addEventListener(
     "touchmove",
     (e) => {
       e.preventDefault();
@@ -855,7 +851,7 @@ function initFluidSimulation() {
     false
   );
 
-  canvasEl.addEventListener("mousedown", () => {
+  canvas.addEventListener("mousedown", () => {
     pointers[0].down = true;
     pointers[0].color = [
       Math.random() + 0.2,
@@ -864,7 +860,7 @@ function initFluidSimulation() {
     ];
   });
 
-  canvasEl.addEventListener("touchstart", (e) => {
+  canvas.addEventListener("touchstart", (e) => {
     e.preventDefault();
     const touches = e.targetTouches;
     for (let i = 0; i < touches.length; i++) {
@@ -892,20 +888,22 @@ function initFluidSimulation() {
       for (let j = 0; j < pointers.length; j++)
         if (touches[i].identifier == pointers[j].id) pointers[j].down = false;
   });
-}
+});
 </script>
 
 <style scoped>
-.body {
-  margin: 0;
-  position: absolute;
-  width: 100%;
-  height: 100%;
+@import url("https://fonts.googleapis.com/css2?family=Amatic+SC:wght@700&display=swap");
+
+.secret-page {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #000;
 }
 
 canvas {
   width: 100%;
-  height: 100vh;
+  height: 100%;
   display: block;
 }
 
@@ -914,13 +912,11 @@ h1 {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: #000;
+  color: #fff;
   font-size: 40px;
   user-select: none;
-  text-wrap: nowrap;
   text-align: center;
-  pointer-events: none;
-  z-index: 10;
+  text-wrap: nowrap;
 }
 
 @media (min-width: 768px) {

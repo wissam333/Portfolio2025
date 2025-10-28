@@ -179,7 +179,7 @@ function createStars(count = 40) {
   for (let i = 0; i < count; i++) {
     const size = +(Math.random() * 5 + 1).toFixed(2);
     const opacity = +(Math.random() * 0.7 + 0.3).toFixed(2);
-    const animationDuration = (Math.random() * 12 + 8).toFixed(2) + "s"; // 8-20s
+    const animationDuration = (Math.random() * 8 + 6).toFixed(2) + "s"; // 6–14s
 
     const animationDelay = (Math.random() * 5).toFixed(2) + "s";
     const left = Math.random() * 100 + "%";
@@ -320,7 +320,9 @@ const disableFlashlight = () => {
 
 onMounted(() => {
   window.addEventListener("mousemove", updateCursor);
-  window.addEventListener("touchmove", updateCursor, { passive: true });
+  window.addEventListener("touchmove", updateCursor);
+  // window.addEventListener("touchstart", enableFlashlight);
+  // window.addEventListener("touchend", disableFlashlight);
 });
 
 onUnmounted(() => {
@@ -358,7 +360,7 @@ const handleScroll = () => {
 };
 
 onMounted(() => {
-  window.addEventListener("scroll", handleScroll, { passive: true });
+  window.addEventListener("scroll", handleScroll);
 });
 
 onUnmounted(() => {
@@ -411,7 +413,6 @@ $primary-color: #4fc08d;
   animation-name: fall;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
-  transform: translate3d(0, 0, 0);
 }
 
 .star.paused {
@@ -430,7 +431,6 @@ $primary-color: #4fc08d;
   box-shadow: 0 0 6px #fff, 0 0 12px rgba(255, 255, 255, 0.7);
   transform-origin: center center;
   transition: transform 0.28s ease, box-shadow 0.28s ease, opacity 0.28s ease;
-  will-change: transform, opacity;
 }
 
 .star-inner.hovered {

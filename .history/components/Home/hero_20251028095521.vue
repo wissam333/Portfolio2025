@@ -320,7 +320,9 @@ const disableFlashlight = () => {
 
 onMounted(() => {
   window.addEventListener("mousemove", updateCursor);
-  window.addEventListener("touchmove", updateCursor, { passive: true });
+  window.addEventListener("touchmove", updateCursor);
+  // window.addEventListener("touchstart", enableFlashlight);
+  // window.addEventListener("touchend", disableFlashlight);
 });
 
 onUnmounted(() => {
@@ -358,7 +360,7 @@ const handleScroll = () => {
 };
 
 onMounted(() => {
-  window.addEventListener("scroll", handleScroll, { passive: true });
+  window.addEventListener("scroll", handleScroll);
 });
 
 onUnmounted(() => {
@@ -766,10 +768,9 @@ $primary-color: #4fc08d;
   inset: 0;
   pointer-events: none;
   background: radial-gradient(
-    circle 12vmax at var(--cursorX) var(--cursorY),
-    rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0.5) 70%,
-    rgba(0, 0, 0, 0.96) 100%
+    circle 120px at var(--cursorX) var(--cursorY),
+    transparent 0%,
+    rgba(0, 0, 0, 0.9) 100%
   );
   z-index: 4; // below hidden items
 }
