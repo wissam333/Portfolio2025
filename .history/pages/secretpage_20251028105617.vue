@@ -20,15 +20,10 @@ onMounted(() => {
 
 function initFluidSimulation() {
   if (!canvas.value) return;
-  // Check performance capabilities
-  const isMobile =
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    );
-  const isHighPerf = !isMobile; // Assume desktop is higher perf
 
   const canvasEl = canvas.value;
   const ctx = canvasEl.getContext("webgl");
+
   if (!ctx) {
     console.error("WebGL not supported");
     return;
@@ -38,12 +33,12 @@ function initFluidSimulation() {
   canvasEl.height = canvasEl.clientHeight;
 
   let config = {
-    TEXTURE_DOWNSAMPLE: isMobile ? 2 : 1,
+    TEXTURE_DOWNSAMPLE: 1,
     DENSITY_DISSIPATION: 0.98,
     VELOCITY_DISSIPATION: 0.99,
     PRESSURE_DISSIPATION: 0.8,
-    PRESSURE_ITERATIONS: isMobile ? 15 : 25,
-    CURL: isMobile ? 20 : 30,
+    PRESSURE_ITERATIONS: 25,
+    CURL: 30,
     SPLAT_RADIUS: 0.005,
   };
 

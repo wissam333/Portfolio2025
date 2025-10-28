@@ -1,10 +1,12 @@
 <template>
-  <div class=".body" :dir="$i18n.locale === 'ar' ? 'rtl' : 'ltr'">
-    <canvas ref="canvas"></canvas>
-    <h1 class="fw-bold">
-      {{ $i18n.locale === "ar" ? "لقد فعلتها!" : "You did it!" }}
-    </h1>
-  </div>
+  <client-only>
+    <div class=".body" :dir="$i18n.locale === 'ar' ? 'rtl' : 'ltr'">
+      <canvas ref="canvas"></canvas>
+      <h1 class="fw-bold">
+        {{ $i18n.locale === "ar" ? "لقد فعلتها!" : "You did it!" }}
+      </h1>
+    </div>
+  </client-only>
 </template>
 
 <script setup>
@@ -20,15 +22,10 @@ onMounted(() => {
 
 function initFluidSimulation() {
   if (!canvas.value) return;
-  // Check performance capabilities
-  const isMobile =
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    );
-  const isHighPerf = !isMobile; // Assume desktop is higher perf
 
   const canvasEl = canvas.value;
   const ctx = canvasEl.getContext("webgl");
+
   if (!ctx) {
     console.error("WebGL not supported");
     return;
@@ -38,12 +35,12 @@ function initFluidSimulation() {
   canvasEl.height = canvasEl.clientHeight;
 
   let config = {
-    TEXTURE_DOWNSAMPLE: isMobile ? 2 : 1,
+    TEXTURE_DOWNSAMPLE: 1,
     DENSITY_DISSIPATION: 0.98,
     VELOCITY_DISSIPATION: 0.99,
     PRESSURE_DISSIPATION: 0.8,
-    PRESSURE_ITERATIONS: isMobile ? 15 : 25,
-    CURL: isMobile ? 20 : 30,
+    PRESSURE_ITERATIONS: 25,
+    CURL: 30,
     SPLAT_RADIUS: 0.005,
   };
 
@@ -53,139 +50,52 @@ function initFluidSimulation() {
   const { gl, ext } = getWebGLContext(canvasEl);
 
   function getWebGLContext(canvas) {
-    const contextAttributes = {
+    const params = {
       alpha: false,
       depth: false,
       stencil: false,
       antialias: false,
-      preserveDrawingBuffer: false,
-      powerPreference: "default",
-      failIfMajorPerformanceCaveat: false, // Important for new phones!
     };
 
-    let gl = null;
-    let isWebGL2 = false;
+    let gl = canvas.getContext("webgl2", params);
+    const isWebGL2 = !!gl;
+    if (!isWebGL2)
+      gl =
+        canvas.getContext("webgl", params) ||
+        canvas.getContext("experimental-webgl", params);
 
-    // Try different context types with error handling
-    const contextTypes = ["webgl2", "webgl", "experimental-webgl"];
-
-    for (const contextType of contextTypes) {
-      try {
-        gl = canvas.getContext(contextType, contextAttributes);
-        if (gl) {
-          isWebGL2 = contextType === "webgl2";
-          console.log(`Using ${contextType} context`);
-          break;
-        }
-      } catch (e) {
-        console.warn(`${contextType} failed:`, e);
-        continue;
-      }
-    }
-
-    if (!gl) {
-      console.error("All WebGL context types failed");
-      return { gl: null, ext: null };
-    }
-
-    // Test if context is actually usable
-    try {
-      gl.getParameter(gl.VERSION);
-    } catch (e) {
-      console.error("WebGL context created but not usable:", e);
-      return { gl: null, ext: null };
-    }
-
-    let halfFloat = null;
-    let supportLinearFiltering = false;
-
-    try {
-      if (isWebGL2) {
-        // For WebGL2 - try different extensions
-        const extensionsToTry = [
-          "EXT_color_buffer_float",
-          "EXT_color_buffer_half_float",
-          "OES_texture_float_linear",
-          "OES_texture_half_float_linear",
-        ];
-
-        for (const extName of extensionsToTry) {
-          try {
-            const extension = gl.getExtension(extName);
-            if (extension) {
-              console.log(`Supported: ${extName}`);
-            }
-          } catch (e) {
-            console.warn(`Extension ${extName} failed:`, e);
-          }
-        }
-
-        // Get critical extensions
-        halfFloat = { HALF_FLOAT: gl.HALF_FLOAT };
-        supportLinearFiltering = !!gl.getExtension("OES_texture_float_linear");
-      } else {
-        // For WebGL1
-        halfFloat = gl.getExtension("OES_texture_half_float");
-        if (!halfFloat) {
-          console.warn(
-            "OES_texture_half_float not supported, trying fallbacks"
-          );
-          // Try to use FLOAT instead
-          halfFloat = { HALF_FLOAT_OES: gl.FLOAT };
-        } else {
-          supportLinearFiltering = !!gl.getExtension(
-            "OES_texture_half_float_linear"
-          );
-        }
-      }
-    } catch (e) {
-      console.error("Error getting WebGL extensions:", e);
-      return { gl: null, ext: null };
-    }
-
-    if (!halfFloat) {
-      console.error("No half-float support available");
-      return { gl: null, ext: null };
+    let halfFloat;
+    let supportLinearFiltering;
+    if (isWebGL2) {
+      gl.getExtension("EXT_color_buffer_float");
+      supportLinearFiltering = gl.getExtension("OES_texture_float_linear");
+    } else {
+      halfFloat = gl.getExtension("OES_texture_half_float");
+      supportLinearFiltering = gl.getExtension("OES_texture_half_float_linear");
     }
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
     const halfFloatTexType = isWebGL2
       ? gl.HALF_FLOAT
-      : halfFloat.HALF_FLOAT_OES || gl.FLOAT;
+      : halfFloat.HALF_FLOAT_OES;
+    let formatRGBA;
+    let formatRG;
+    let formatR;
 
-    // Use more conservative format detection
-    let formatRGBA, formatRG, formatR;
-
-    try {
-      if (isWebGL2) {
-        formatRGBA =
-          getSupportedFormat(gl, gl.RGBA16F, gl.RGBA, halfFloatTexType) ||
-          getSupportedFormat(gl, gl.RGBA32F, gl.RGBA, gl.FLOAT) ||
-          getSupportedFormat(gl, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE);
-
-        formatRG =
-          getSupportedFormat(gl, gl.RG16F, gl.RG, halfFloatTexType) ||
-          getSupportedFormat(gl, gl.RG32F, gl.RG, gl.FLOAT) ||
-          getSupportedFormat(gl, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE);
-
-        formatR =
-          getSupportedFormat(gl, gl.R16F, gl.RED, halfFloatTexType) ||
-          getSupportedFormat(gl, gl.R32F, gl.RED, gl.FLOAT) ||
-          getSupportedFormat(gl, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE);
-      } else {
-        // Fallback to basic formats for WebGL1
-        formatRGBA = { internalFormat: gl.RGBA, format: gl.RGBA };
-        formatRG = { internalFormat: gl.RGBA, format: gl.RGBA };
-        formatR = { internalFormat: gl.RGBA, format: gl.RGBA };
-      }
-    } catch (e) {
-      console.error("Error detecting formats:", e);
-      // Use most basic fallback
-      formatRGBA =
-        formatRG =
-        formatR =
-          { internalFormat: gl.RGBA, format: gl.RGBA };
+    if (isWebGL2) {
+      formatRGBA = getSupportedFormat(
+        gl,
+        gl.RGBA16F,
+        gl.RGBA,
+        halfFloatTexType
+      );
+      formatRG = getSupportedFormat(gl, gl.RG16F, gl.RG, halfFloatTexType);
+      formatR = getSupportedFormat(gl, gl.R16F, gl.RED, halfFloatTexType);
+    } else {
+      formatRGBA = getSupportedFormat(gl, gl.RGBA, gl.RGBA, halfFloatTexType);
+      formatRG = getSupportedFormat(gl, gl.RGBA, gl.RGBA, halfFloatTexType);
+      formatR = getSupportedFormat(gl, gl.RGBA, gl.RGBA, halfFloatTexType);
     }
 
     return {
@@ -195,7 +105,7 @@ function initFluidSimulation() {
         formatRG,
         formatR,
         halfFloatTexType,
-        supportLinearFiltering: !!supportLinearFiltering,
+        supportLinearFiltering,
       },
     };
   }
