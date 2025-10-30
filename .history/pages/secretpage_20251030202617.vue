@@ -246,26 +246,10 @@ function initFluidSimulation() {
       texture,
       0
     );
-    
-    const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-    gl.deleteTexture(tex);
-    gl.deleteFramebuffer(fbo);
 
-    if (status == gl.FRAMEBUFFER_COMPLETE) {
-      return { internalFormat, format, type };
-    } else {
-      console.warn(
-        "⚠️ Framebuffer incomplete for",
-        internalFormat,
-        "→ Falling back to UNSIGNED_BYTE"
-      );
-      // 🔥 fallback for new phones that block half-float or linear formats
-      return {
-        internalFormat: gl.RGBA,
-        format: gl.RGBA,
-        type: gl.UNSIGNED_BYTE,
-      };
-    }
+    const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+    if (status != gl.FRAMEBUFFER_COMPLETE) return false;
+    return true;
   }
 
   function pointerPrototype() {

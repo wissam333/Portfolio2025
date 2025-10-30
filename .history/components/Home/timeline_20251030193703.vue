@@ -10,7 +10,13 @@
     class=""
   >
     <section class="experience-section">
-      <h2 class="headline">Experience & Learning Journey</h2>
+      <h2 class="headline">
+        {{
+          $i18n.locale === "ar"
+            ? "رحلة الخبرة والتعلم"
+            : "Experience & Learning Journey"
+        }}
+      </h2>
 
       <Timeline :value="events" align="alternate" class="custom-timeline">
         <!-- Custom marker -->
@@ -27,16 +33,27 @@
         <template #content="slotProps">
           <Card
             class="timeline-card"
+            :dir="$i18n.locale === 'ar' ? 'rtl' : 'ltr'"
             :data-aos="slotProps.index % 2 === 0 ? 'flip-right' : 'flip-left'"
           >
             <template #title>
-              {{ slotProps.item.title }}
+              {{
+                $i18n.locale === "ar"
+                  ? slotProps.item.titleAr
+                  : slotProps.item.title
+              }}
             </template>
             <template #subtitle>
               {{ slotProps.item.date }}
             </template>
             <template #content>
-              <p>{{ slotProps.item.description }}</p>
+              <p>
+                {{
+                  $i18n.locale === "ar"
+                    ? slotProps.item.descriptionAr
+                    : slotProps.item.description
+                }}
+              </p>
             </template>
           </Card>
         </template>
@@ -53,7 +70,7 @@
       </div>
     </section>
 
-    <img loading="lazy" class="oasis w-100" src="/pngegg.png" alt="" />
+    <img loading="lazy" class="oasis w-100" src="/pngegg2.webp" alt="" />
   </UiVortex>
 </template>
 

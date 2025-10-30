@@ -1,9 +1,12 @@
 <template>
-  <div class=".body" :dir="$i18n.locale === 'ar' ? 'rtl' : 'ltr'">
+  <div class="body" :dir="$i18n.locale === 'ar' ? 'rtl' : 'ltr'">
     <canvas ref="canvas"></canvas>
     <h1 class="fw-bold">
       {{ $i18n.locale === "ar" ? "لقد فعلتها!" : "You did it!" }}
     </h1>
+    <div v-if="showSecret" class="secret-message">
+      {{ $i18n.locale === "ar" ? "السر مكتشف! ✨" : "Secret Discovered! ✨" }}
+    </div>
   </div>
 </template>
 
@@ -13,139 +16,156 @@ definePageMeta({
 });
 
 const canvas = ref(null);
-
-onMounted(() => {
-  initFluidSimulation();
-});
+const showSecret = ref(false);
+const secretSequence = ref([]);
+const konamiCode = [
+  "ArrowUp",
+  "ArrowUp",
+  "ArrowDown",
+  "ArrowDown",
+  "ArrowLeft",
+  "ArrowRight",
+  "ArrowLeft",
+  "ArrowRight",
+  "KeyB",
+  "KeyA",
+];
 
 function initFluidSimulation() {
   if (!canvas.value) return;
-  // Check performance capabilities
+
+  // Better performance detection
   const isMobile =
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
       navigator.userAgent
     );
-  const isHighPerf = !isMobile; // Assume desktop is higher perf
+
+  // More accurate performance detection
+  const getPerformanceTier = () => {
+    if (isMobile) {
+      // Check for high-end mobile devices
+      const isHighEndMobile =
+        /iPhone (1[3-9]|[2-9][0-9])|iPad ([7-9]|[1-9][0-9])|Samsung Galaxy S(2[0-9]|[3-9][0-9])/.test(
+          navigator.userAgent
+        ) ||
+        (navigator.deviceMemory && navigator.deviceMemory >= 4) ||
+        (navigator.hardwareConcurrency && navigator.hardwareConcurrency >= 6);
+
+      return isHighEndMobile ? "medium" : "low";
+    }
+
+    // Desktop - assume medium to high performance
+    return "high";
+  };
+
+  const performanceTier = getPerformanceTier();
 
   const canvasEl = canvas.value;
-  const ctx = canvasEl.getContext("webgl");
-  if (!ctx) {
-    console.error("WebGL not supported");
+
+  // Try to get WebGL context with better error handling
+  let gl = null;
+  let isWebGL2 = false;
+
+  // Try different context types
+  const contextTypes = ["webgl2", "webgl", "experimental-webgl"];
+  const contextAttributes = {
+    alpha: false,
+    depth: false,
+    stencil: false,
+    antialias: false,
+    preserveDrawingBuffer: false,
+    powerPreference: "default",
+    failIfMajorPerformanceCaveat: false,
+  };
+
+  for (const contextType of contextTypes) {
+    try {
+      gl = canvasEl.getContext(contextType, contextAttributes);
+      if (gl) {
+        isWebGL2 = contextType === "webgl2";
+        console.log(`Using ${contextType} context`);
+        break;
+      }
+    } catch (e) {
+      console.warn(`${contextType} failed:`, e);
+    }
+  }
+
+  if (!gl) {
+    console.error("WebGL not supported on this device");
     return;
   }
 
-  canvasEl.width = canvasEl.clientWidth;
-  canvasEl.height = canvasEl.clientHeight;
+  // Test WebGL capabilities
+  try {
+    gl.getParameter(gl.VERSION);
+  } catch (e) {
+    console.error("WebGL context not usable:", e);
+    return;
+  }
 
+  canvasEl.width = Math.min(canvasEl.clientWidth, 2048);
+  canvasEl.height = Math.min(canvasEl.clientHeight, 2048);
+
+  // Adaptive configuration based on performance tier
   let config = {
-    TEXTURE_DOWNSAMPLE: isMobile ? 2 : 1,
+    TEXTURE_DOWNSAMPLE:
+      performanceTier === "low" ? 2 : performanceTier === "medium" ? 1 : 1,
     DENSITY_DISSIPATION: 0.98,
     VELOCITY_DISSIPATION: 0.99,
     PRESSURE_DISSIPATION: 0.8,
-    PRESSURE_ITERATIONS: isMobile ? 15 : 25,
-    CURL: isMobile ? 20 : 30,
+    PRESSURE_ITERATIONS:
+      performanceTier === "low" ? 10 : performanceTier === "medium" ? 15 : 25,
+    CURL:
+      performanceTier === "low" ? 15 : performanceTier === "medium" ? 25 : 30,
     SPLAT_RADIUS: 0.005,
+    SPLAT_FORCE: performanceTier === "low" ? 5.0 : 10.0,
   };
 
   let pointers = [];
   let splatStack = [];
+  let secretMode = false;
+  let rainbowHue = 0;
 
-  const { gl, ext } = getWebGLContext(canvasEl);
+  const { ext } = getWebGLContext(canvasEl, gl, isWebGL2);
 
-  function getWebGLContext(canvas) {
-    const contextAttributes = {
-      alpha: false,
-      depth: false,
-      stencil: false,
-      antialias: false,
-      preserveDrawingBuffer: false,
-      powerPreference: "default",
-      failIfMajorPerformanceCaveat: false, // Important for new phones!
-    };
+  if (!ext) {
+    console.error("WebGL extensions not supported");
+    return;
+  }
 
-    let gl = null;
-    let isWebGL2 = false;
-
-    // Try different context types with error handling
-    const contextTypes = ["webgl2", "webgl", "experimental-webgl"];
-
-    for (const contextType of contextTypes) {
-      try {
-        gl = canvas.getContext(contextType, contextAttributes);
-        if (gl) {
-          isWebGL2 = contextType === "webgl2";
-          console.log(`Using ${contextType} context`);
-          break;
-        }
-      } catch (e) {
-        console.warn(`${contextType} failed:`, e);
-        continue;
-      }
-    }
-
-    if (!gl) {
-      console.error("All WebGL context types failed");
-      return { gl: null, ext: null };
-    }
-
-    // Test if context is actually usable
-    try {
-      gl.getParameter(gl.VERSION);
-    } catch (e) {
-      console.error("WebGL context created but not usable:", e);
-      return { gl: null, ext: null };
-    }
-
+  function getWebGLContext(canvas, gl, isWebGL2) {
     let halfFloat = null;
     let supportLinearFiltering = false;
 
     try {
       if (isWebGL2) {
-        // For WebGL2 - try different extensions
-        const extensionsToTry = [
-          "EXT_color_buffer_float",
-          "EXT_color_buffer_half_float",
-          "OES_texture_float_linear",
-          "OES_texture_half_float_linear",
-        ];
-
-        for (const extName of extensionsToTry) {
-          try {
-            const extension = gl.getExtension(extName);
-            if (extension) {
-              console.log(`Supported: ${extName}`);
-            }
-          } catch (e) {
-            console.warn(`Extension ${extName} failed:`, e);
-          }
-        }
-
-        // Get critical extensions
         halfFloat = { HALF_FLOAT: gl.HALF_FLOAT };
-        supportLinearFiltering = !!gl.getExtension("OES_texture_float_linear");
+        const linearFilteringExt = gl.getExtension("OES_texture_float_linear");
+        supportLinearFiltering = !!linearFilteringExt;
+        gl.getExtension("EXT_color_buffer_float");
+        gl.getExtension("EXT_color_buffer_half_float");
       } else {
-        // For WebGL1
         halfFloat = gl.getExtension("OES_texture_half_float");
-        if (!halfFloat) {
-          console.warn(
-            "OES_texture_half_float not supported, trying fallbacks"
-          );
-          // Try to use FLOAT instead
-          halfFloat = { HALF_FLOAT_OES: gl.FLOAT };
-        } else {
+        if (halfFloat) {
           supportLinearFiltering = !!gl.getExtension(
             "OES_texture_half_float_linear"
+          );
+        } else {
+          halfFloat = { HALF_FLOAT_OES: gl.FLOAT };
+          supportLinearFiltering = !!gl.getExtension(
+            "OES_texture_float_linear"
           );
         }
       }
     } catch (e) {
       console.error("Error getting WebGL extensions:", e);
-      return { gl: null, ext: null };
+      return { ext: null };
     }
 
     if (!halfFloat) {
-      console.error("No half-float support available");
-      return { gl: null, ext: null };
+      console.error("No floating point texture support");
+      return { ext: null };
     }
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -154,34 +174,26 @@ function initFluidSimulation() {
       ? gl.HALF_FLOAT
       : halfFloat.HALF_FLOAT_OES || gl.FLOAT;
 
-    // Use more conservative format detection
     let formatRGBA, formatRG, formatR;
 
     try {
       if (isWebGL2) {
         formatRGBA =
           getSupportedFormat(gl, gl.RGBA16F, gl.RGBA, halfFloatTexType) ||
-          getSupportedFormat(gl, gl.RGBA32F, gl.RGBA, gl.FLOAT) ||
           getSupportedFormat(gl, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE);
-
         formatRG =
           getSupportedFormat(gl, gl.RG16F, gl.RG, halfFloatTexType) ||
-          getSupportedFormat(gl, gl.RG32F, gl.RG, gl.FLOAT) ||
           getSupportedFormat(gl, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE);
-
         formatR =
           getSupportedFormat(gl, gl.R16F, gl.RED, halfFloatTexType) ||
-          getSupportedFormat(gl, gl.R32F, gl.RED, gl.FLOAT) ||
           getSupportedFormat(gl, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE);
       } else {
-        // Fallback to basic formats for WebGL1
         formatRGBA = { internalFormat: gl.RGBA, format: gl.RGBA };
         formatRG = { internalFormat: gl.RGBA, format: gl.RGBA };
         formatR = { internalFormat: gl.RGBA, format: gl.RGBA };
       }
     } catch (e) {
-      console.error("Error detecting formats:", e);
-      // Use most basic fallback
+      console.error("Format detection failed, using basic formats:", e);
       formatRGBA =
         formatRG =
         formatR =
@@ -189,55 +201,51 @@ function initFluidSimulation() {
     }
 
     return {
-      gl,
       ext: {
         formatRGBA,
         formatRG,
         formatR,
         halfFloatTexType,
-        supportLinearFiltering: !!supportLinearFiltering,
+        supportLinearFiltering,
       },
     };
   }
 
   function getSupportedFormat(gl, internalFormat, format, type) {
     if (!supportRenderTextureFormat(gl, internalFormat, format, type)) {
-      switch (internalFormat) {
-        case gl.R16F:
-          return getSupportedFormat(gl, gl.RG16F, gl.RG, type);
-        case gl.RG16F:
-          return getSupportedFormat(gl, gl.RGBA16F, gl.RGBA, type);
-        default:
-          return null;
-      }
+      return null;
     }
-
-    return {
-      internalFormat,
-      format,
-    };
+    return { internalFormat, format };
   }
 
   function supportRenderTextureFormat(gl, internalFormat, format, type) {
-    let texture = gl.createTexture();
+    const texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      internalFormat,
-      4,
-      4,
-      0,
-      format,
-      type,
-      null
-    );
 
-    let fbo = gl.createFramebuffer();
+    try {
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        internalFormat,
+        4,
+        4,
+        0,
+        format,
+        type,
+        null
+      );
+    } catch (e) {
+      console.warn(
+        `Texture format not supported: ${internalFormat}, ${format}, ${type}`
+      );
+      return false;
+    }
+
+    const fbo = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
     gl.framebufferTexture2D(
       gl.FRAMEBUFFER,
@@ -246,26 +254,9 @@ function initFluidSimulation() {
       texture,
       0
     );
-    
-    const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-    gl.deleteTexture(tex);
-    gl.deleteFramebuffer(fbo);
 
-    if (status == gl.FRAMEBUFFER_COMPLETE) {
-      return { internalFormat, format, type };
-    } else {
-      console.warn(
-        "⚠️ Framebuffer incomplete for",
-        internalFormat,
-        "→ Falling back to UNSIGNED_BYTE"
-      );
-      // 🔥 fallback for new phones that block half-float or linear formats
-      return {
-        internalFormat: gl.RGBA,
-        format: gl.RGBA,
-        type: gl.UNSIGNED_BYTE,
-      };
-    }
+    const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+    return status === gl.FRAMEBUFFER_COMPLETE;
   }
 
   function pointerPrototype() {
@@ -762,7 +753,7 @@ function initFluidSimulation() {
   })();
 
   let lastTime = Date.now();
-  multipleSplats(parseInt(Math.random() * 20) + 5);
+  multipleSplats(parseInt(Math.random() * 10) + 3);
   update();
 
   function update() {
@@ -770,6 +761,11 @@ function initFluidSimulation() {
 
     const dt = Math.min((Date.now() - lastTime) / 1000, 0.016);
     lastTime = Date.now();
+
+    // Update rainbow hue for secret mode
+    if (secretMode) {
+      rainbowHue = (rainbowHue + dt * 0.5) % 1.0;
+    }
 
     gl.viewport(0, 0, textureWidth, textureHeight);
 
@@ -803,6 +799,11 @@ function initFluidSimulation() {
     for (let i = 0; i < pointers.length; i++) {
       const pointer = pointers[i];
       if (pointer.moved) {
+        if (secretMode) {
+          // Exotic rainbow colors in secret mode
+          const hue = (rainbowHue + i * 0.2) % 1.0;
+          pointer.color = hslToRgb(hue, 1.0, 0.5);
+        }
         splat(pointer.x, pointer.y, pointer.dx, pointer.dy, pointer.color);
         pointer.moved = false;
       }
@@ -825,7 +826,10 @@ function initFluidSimulation() {
     );
     gl.uniform1i(vorticityProgram.uniforms.uVelocity, velocity.read[2]);
     gl.uniform1i(vorticityProgram.uniforms.uCurl, curl[2]);
-    gl.uniform1f(vorticityProgram.uniforms.curl, config.CURL);
+    gl.uniform1f(
+      vorticityProgram.uniforms.curl,
+      secretMode ? config.CURL * 2 : config.CURL
+    );
     gl.uniform1f(vorticityProgram.uniforms.dt, dt);
     blit(velocity.write[1]);
     velocity.swap();
@@ -858,7 +862,14 @@ function initFluidSimulation() {
     pressureTexId = pressure.read[2];
     gl.uniform1i(pressureProgram.uniforms.uPressure, pressureTexId);
     gl.activeTexture(gl.TEXTURE0 + pressureTexId);
-    for (let i = 0; i < config.PRESSURE_ITERATIONS; i++) {
+    for (
+      let i = 0;
+      i <
+      (secretMode
+        ? config.PRESSURE_ITERATIONS * 1.5
+        : config.PRESSURE_ITERATIONS);
+      i++
+    ) {
       gl.bindTexture(gl.TEXTURE_2D, pressure.read[0]);
       blit(pressure.write[1]);
       pressure.swap();
@@ -883,6 +894,31 @@ function initFluidSimulation() {
     requestAnimationFrame(update);
   }
 
+  function hslToRgb(h, s, l) {
+    let r, g, b;
+
+    if (s === 0) {
+      r = g = b = l;
+    } else {
+      const hue2rgb = (p, q, t) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1 / 6) return p + (q - p) * 6 * t;
+        if (t < 1 / 2) return q;
+        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+        return p;
+      };
+
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r = hue2rgb(p, q, h + 1 / 3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1 / 3);
+    }
+
+    return [r * 10, g * 10, b * 10];
+  }
+
   function splat(x, y, dx, dy, color) {
     splatProgram.bind();
     gl.uniform1i(splatProgram.uniforms.uTarget, velocity.read[2]);
@@ -895,8 +931,16 @@ function initFluidSimulation() {
       x / canvasEl.width,
       1.0 - y / canvasEl.height
     );
-    gl.uniform3f(splatProgram.uniforms.color, dx, -dy, 1.0);
-    gl.uniform1f(splatProgram.uniforms.radius, config.SPLAT_RADIUS);
+    gl.uniform3f(
+      splatProgram.uniforms.color,
+      dx * config.SPLAT_FORCE,
+      -dy * config.SPLAT_FORCE,
+      1.0
+    );
+    gl.uniform1f(
+      splatProgram.uniforms.radius,
+      secretMode ? config.SPLAT_RADIUS * 2 : config.SPLAT_RADIUS
+    );
     blit(velocity.write[1]);
     velocity.swap();
 
@@ -913,17 +957,38 @@ function initFluidSimulation() {
 
   function multipleSplats(amount) {
     for (let i = 0; i < amount; i++) {
-      const color = [
-        Math.random() * 10,
-        Math.random() * 10,
-        Math.random() * 10,
-      ];
+      const color = secretMode
+        ? hslToRgb(Math.random(), 1.0, 0.5)
+        : [Math.random() * 10, Math.random() * 10, Math.random() * 10];
       const x = canvasEl.width * Math.random();
       const y = canvasEl.height * Math.random();
       const dx = 1000 * (Math.random() - 0.5);
       const dy = 1000 * (Math.random() - 0.5);
       splat(x, y, dx, dy, color);
     }
+  }
+
+  function activateSecretMode() {
+    secretMode = true;
+    showSecret.value = true;
+    console.log("🎉 Secret mode activated! Exotic smoke engaged!");
+
+    // Add some initial exotic splats
+    for (let i = 0; i < 8; i++) {
+      setTimeout(() => {
+        const color = hslToRgb(Math.random(), 1.0, 0.5);
+        const x = canvasEl.width * Math.random();
+        const y = canvasEl.height * Math.random();
+        const dx = 2000 * (Math.random() - 0.5);
+        const dy = 2000 * (Math.random() - 0.5);
+        splat(x, y, dx, dy, color);
+      }, i * 100);
+    }
+
+    // Hide message after 3 seconds
+    setTimeout(() => {
+      showSecret.value = false;
+    }, 3000);
   }
 
   function resizeCanvas() {
@@ -938,83 +1003,149 @@ function initFluidSimulation() {
   }
 
   // Event listeners
-  canvasEl.addEventListener("mousemove", (e) => {
-    pointers[0].moved = pointers[0].down;
-    pointers[0].dx = (e.offsetX - pointers[0].x) * 10.0;
-    pointers[0].dy = (e.offsetY - pointers[0].y) * 10.0;
-    pointers[0].x = e.offsetX;
-    pointers[0].y = e.offsetY;
-  });
+  function setupEventListeners() {
+    // Mouse events
+    canvasEl.addEventListener("mousemove", (e) => {
+      const rect = canvasEl.getBoundingClientRect();
+      pointers[0].moved = pointers[0].down;
+      pointers[0].dx =
+        (e.clientX - rect.left - pointers[0].x) * config.SPLAT_FORCE;
+      pointers[0].dy =
+        (e.clientY - rect.top - pointers[0].y) * config.SPLAT_FORCE;
+      pointers[0].x = e.clientX - rect.left;
+      pointers[0].y = e.clientY - rect.top;
+    });
 
-  canvasEl.addEventListener(
-    "touchmove",
-    (e) => {
-      e.preventDefault();
-      const touches = e.targetTouches;
+    canvasEl.addEventListener("mousedown", (e) => {
+      const rect = canvasEl.getBoundingClientRect();
+      pointers[0].down = true;
+      pointers[0].x = e.clientX - rect.left;
+      pointers[0].y = e.clientY - rect.top;
+      pointers[0].color = secretMode
+        ? hslToRgb(Math.random(), 1.0, 0.5)
+        : [Math.random() + 0.2, Math.random() + 0.2, Math.random() + 0.2];
+    });
+
+    // Touch events
+    canvasEl.addEventListener(
+      "touchmove",
+      (e) => {
+        e.preventDefault();
+        const rect = canvasEl.getBoundingClientRect();
+        const touches = e.targetTouches;
+
+        for (let i = 0; i < touches.length; i++) {
+          if (i >= pointers.length) {
+            pointers.push(new pointerPrototype());
+          }
+          let pointer = pointers[i];
+          pointer.moved = pointer.down;
+          pointer.dx =
+            (touches[i].clientX - rect.left - pointer.x) * config.SPLAT_FORCE;
+          pointer.dy =
+            (touches[i].clientY - rect.top - pointer.y) * config.SPLAT_FORCE;
+          pointer.x = touches[i].clientX - rect.left;
+          pointer.y = touches[i].clientY - rect.top;
+        }
+      },
+      { passive: false }
+    );
+
+    canvasEl.addEventListener(
+      "touchstart",
+      (e) => {
+        e.preventDefault();
+        const rect = canvasEl.getBoundingClientRect();
+        const touches = e.targetTouches;
+
+        for (let i = 0; i < touches.length; i++) {
+          if (i >= pointers.length) pointers.push(new pointerPrototype());
+
+          pointers[i].id = touches[i].identifier;
+          pointers[i].down = true;
+          pointers[i].x = touches[i].clientX - rect.left;
+          pointers[i].y = touches[i].clientY - rect.top;
+          pointers[i].color = secretMode
+            ? hslToRgb(Math.random(), 1.0, 0.5)
+            : [Math.random() + 0.2, Math.random() + 0.2, Math.random() + 0.2];
+        }
+      },
+      { passive: false }
+    );
+
+    window.addEventListener("mouseup", () => {
+      pointers[0].down = false;
+    });
+
+    window.addEventListener("touchend", (e) => {
+      const touches = e.changedTouches;
       for (let i = 0; i < touches.length; i++) {
-        let pointer = pointers[i];
-        pointer.moved = pointer.down;
-        pointer.dx = (touches[i].pageX - pointer.x) * 10.0;
-        pointer.dy = (touches[i].pageY - pointer.y) * 10.0;
-        pointer.x = touches[i].pageX;
-        pointer.y = touches[i].pageY;
+        for (let j = 0; j < pointers.length; j++) {
+          if (touches[i].identifier === pointers[j].id) {
+            pointers[j].down = false;
+          }
+        }
       }
-    },
-    false
-  );
+    });
 
-  canvasEl.addEventListener("mousedown", () => {
-    pointers[0].down = true;
-    pointers[0].color = [
-      Math.random() + 0.2,
-      Math.random() + 0.2,
-      Math.random() + 0.2,
-    ];
-  });
+    // Konami code listener for secret mode
+    window.addEventListener("keydown", (e) => {
+      secretSequence.value.push(e.code);
 
-  canvasEl.addEventListener("touchstart", (e) => {
-    e.preventDefault();
-    const touches = e.targetTouches;
-    for (let i = 0; i < touches.length; i++) {
-      if (i >= pointers.length) pointers.push(new pointerPrototype());
+      // Keep only the last 10 keys
+      if (secretSequence.value.length > 10) {
+        secretSequence.value.shift();
+      }
 
-      pointers[i].id = touches[i].identifier;
-      pointers[i].down = true;
-      pointers[i].x = touches[i].pageX;
-      pointers[i].y = touches[i].pageY;
-      pointers[i].color = [
-        Math.random() + 0.2,
-        Math.random() + 0.2,
-        Math.random() + 0.2,
-      ];
-    }
-  });
+      // Check if sequence matches Konami code
+      if (secretSequence.value.join(",") === konamiCode.join(",")) {
+        activateSecretMode();
+        secretSequence.value = []; // Reset sequence
+      }
+    });
 
-  window.addEventListener("mouseup", () => {
-    pointers[0].down = false;
-  });
+    // Double-click secret
+    canvasEl.addEventListener("dblclick", () => {
+      activateSecretMode();
+    });
 
-  window.addEventListener("touchend", (e) => {
-    const touches = e.changedTouches;
-    for (let i = 0; i < touches.length; i++)
-      for (let j = 0; j < pointers.length; j++)
-        if (touches[i].identifier == pointers[j].id) pointers[j].down = false;
-  });
+    // Handle resize
+    window.addEventListener("resize", () => {
+      resizeCanvas();
+    });
+  }
+
+  // Initialize
+  try {
+    setupEventListeners();
+    update();
+  } catch (error) {
+    console.error("Error initializing fluid simulation:", error);
+  }
 }
+
+onMounted(() => {
+  initFluidSimulation();
+});
 </script>
 
 <style scoped>
 .body {
   margin: 0;
+  padding: 0;
   position: absolute;
   width: 100%;
   height: 100%;
+  overflow: hidden;
+  background: #000;
+  cursor: pointer;
 }
 
 canvas {
   width: 100%;
   height: 100vh;
   display: block;
+  touch-action: none;
 }
 
 h1 {
@@ -1022,16 +1153,69 @@ h1 {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: #000;
-  font-size: 40px;
+  color: #fff;
+  font-size: 32px;
   user-select: none;
   text-wrap: nowrap;
   text-align: center;
   pointer-events: none;
   z-index: 10;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  font-family: "Arial", sans-serif;
+}
+
+.secret-message {
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #ff6b6b;
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  pointer-events: none;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 10px 20px;
+  border-radius: 10px;
+  animation: pulse 1s infinite;
+  font-family: "Arial", sans-serif;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateX(-50%) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+/* Better responsive font sizes */
+@media (max-width: 480px) {
+  h1 {
+    font-size: 28px;
+  }
+
+  .secret-message {
+    font-size: 20px;
+    top: 15%;
+  }
 }
 
 @media (min-width: 768px) {
+  h1 {
+    font-size: 48px;
+  }
+}
+
+@media (min-width: 1024px) {
   h1 {
     font-size: 60px;
   }

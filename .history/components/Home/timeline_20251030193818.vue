@@ -155,8 +155,7 @@ const getStarStyle = (n) => {
       padding: 1rem 1.5rem;
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2); // soft shadow
       z-index: 1;
-      align-items: flex-start;
-      text-align: start !important;
+
       p {
         color: #ccc;
         font-size: 0.95rem;

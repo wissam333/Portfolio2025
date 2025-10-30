@@ -246,7 +246,6 @@ function initFluidSimulation() {
       texture,
       0
     );
-    
     const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
     gl.deleteTexture(tex);
     gl.deleteFramebuffer(fbo);

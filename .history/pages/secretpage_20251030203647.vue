@@ -28,11 +28,17 @@ function initFluidSimulation() {
   const isHighPerf = !isMobile; // Assume desktop is higher perf
 
   const canvasEl = canvas.value;
-  const ctx = canvasEl.getContext("webgl");
+  // ✅ WebGL context with fallback
+  let ctx =
+    canvasEl.getContext("webgl2", contextAttributes) ||
+    canvasEl.getContext("webgl", contextAttributes) ||
+    canvasEl.getContext("experimental-webgl", contextAttributes);
+
   if (!ctx) {
-    console.error("WebGL not supported");
+    alert("Your device does not support WebGL");
     return;
   }
+
 
   canvasEl.width = canvasEl.clientWidth;
   canvasEl.height = canvasEl.clientHeight;
@@ -246,26 +252,10 @@ function initFluidSimulation() {
       texture,
       0
     );
-    
-    const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-    gl.deleteTexture(tex);
-    gl.deleteFramebuffer(fbo);
 
-    if (status == gl.FRAMEBUFFER_COMPLETE) {
-      return { internalFormat, format, type };
-    } else {
-      console.warn(
-        "⚠️ Framebuffer incomplete for",
-        internalFormat,
-        "→ Falling back to UNSIGNED_BYTE"
-      );
-      // 🔥 fallback for new phones that block half-float or linear formats
-      return {
-        internalFormat: gl.RGBA,
-        format: gl.RGBA,
-        type: gl.UNSIGNED_BYTE,
-      };
-    }
+    const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+    if (status != gl.FRAMEBUFFER_COMPLETE) return false;
+    return true;
   }
 
   function pointerPrototype() {

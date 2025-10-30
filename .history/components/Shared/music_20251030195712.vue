@@ -317,6 +317,34 @@ onUnmounted(() => {
   transition: width 0.3s ease;
 }
 
+/* Snowy glow */
+.snow-glow {
+  position: absolute;
+  top: -30%;
+  left: -30%;
+  right: -30%;
+  bottom: -30%;
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    rgba(180, 220, 255, 0.08) 0%,
+    transparent 70%
+  );
+  animation: shimmer 6s ease-in-out infinite alternate;
+  border-radius: 50%;
+  z-index: -1;
+}
+@keyframes shimmer {
+  from {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0.9;
+    transform: scale(1.15);
+  }
+}
+
 .music-inner {
   /* existing styles */
   position: relative;

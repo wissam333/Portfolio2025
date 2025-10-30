@@ -10,7 +10,13 @@
     class=""
   >
     <section class="experience-section">
-      <h2 class="headline">Experience & Learning Journey</h2>
+      <h2 class="headline">
+        {{
+          $i18n.locale === "ar"
+            ? "رحلة الخبرة والتعلم"
+            : "Experience & Learning Journey"
+        }}
+      </h2>
 
       <Timeline :value="events" align="alternate" class="custom-timeline">
         <!-- Custom marker -->
@@ -27,16 +33,27 @@
         <template #content="slotProps">
           <Card
             class="timeline-card"
+            :dir="$i18n.locale === 'ar' ? 'rtl' : 'ltr'"
             :data-aos="slotProps.index % 2 === 0 ? 'flip-right' : 'flip-left'"
           >
             <template #title>
-              {{ slotProps.item.title }}
+              {{
+                $i18n.locale === "ar"
+                  ? slotProps.item.titleAr
+                  : slotProps.item.title
+              }}
             </template>
             <template #subtitle>
               {{ slotProps.item.date }}
             </template>
             <template #content>
-              <p>{{ slotProps.item.description }}</p>
+              <p>
+                {{
+                  $i18n.locale === "ar"
+                    ? slotProps.item.descriptionAr
+                    : slotProps.item.description
+                }}
+              </p>
             </template>
           </Card>
         </template>
@@ -53,7 +70,7 @@
       </div>
     </section>
 
-    <img loading="lazy" class="oasis w-100" src="/pngegg.png" alt="" />
+    <img loading="lazy" class="oasis w-100" src="/pngegg2.webp" alt="" />
   </UiVortex>
 </template>
 
@@ -138,7 +155,8 @@ const getStarStyle = (n) => {
       padding: 1rem 1.5rem;
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2); // soft shadow
       z-index: 1;
-
+      align-items: flex-start;
+      text-align: start !important;
       p {
         color: #ccc;
         font-size: 0.95rem;
@@ -218,7 +236,6 @@ const getStarStyle = (n) => {
 
       .p-card-body {
         padding: 0 !important;
-        text-align: left !important;
       }
 
       .timeline-marker {
@@ -229,7 +246,6 @@ const getStarStyle = (n) => {
     /* 🔄 Reverse odd items */
     .p-timeline-event:nth-child(odd) {
       flex-direction: row-reverse !important; /* marker right, card left */
-      text-align: left !important;
 
       .p-timeline-event-content {
         margin-left: 0 !important;
@@ -237,7 +253,6 @@ const getStarStyle = (n) => {
       }
 
       .timeline-card {
-        text-align: left !important; /* keep card text left-aligned even if marker flips */
       }
     }
   }
@@ -247,11 +262,9 @@ const getStarStyle = (n) => {
   position: absolute;
   bottom: 0;
   z-index: 1;
-  /* Fade effect */
   -webkit-mask-image: linear-gradient(to bottom, transparent, black 80%);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: cover;
-
   mask-image: linear-gradient(to bottom, transparent, black 80%);
   mask-repeat: no-repeat;
   mask-size: cover;

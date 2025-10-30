@@ -10,40 +10,55 @@
     class=""
   >
     <section class="experience-section">
-      <h2 class="headline">Experience & Learning Journey</h2>
+      <h2 class="headline">
+        {{
+          $i18n.locale === "ar"
+            ? "رحلة الخبرة والتعلم"
+            : "Experience & Learning Journey"
+        }}
+      </h2>
 
-      <div class="timeline-wrapper">
-        <div class="timeline-inner">
-          <Timeline :value="events" align="alternate" class="custom-timeline">
-            <!-- Custom marker -->
-            <template #marker="slotProps">
-              <span
-                class="timeline-marker"
-                :style="{ backgroundColor: slotProps.item.color }"
-              >
-                <Icon :name="slotProps.item.icon" class="icon" />
-              </span>
+      <Timeline :value="events" align="alternate" class="custom-timeline">
+        <!-- Custom marker -->
+        <template #marker="slotProps">
+          <span
+            class="timeline-marker"
+            :style="{ backgroundColor: slotProps.item.color }"
+          >
+            <Icon :name="slotProps.item.icon" class="icon" />
+          </span>
+        </template>
+
+        <!-- Custom content card -->
+        <template #content="slotProps">
+          <Card
+            class="timeline-card"
+            :data-aos="slotProps.index % 2 === 0 ? 'flip-right' : 'flip-left'"
+          >
+            <template #title>
+              {{
+                $i18n.locale === "ar"
+                  ? slotProps.item.titleAr
+                  : slotProps.item.title
+              }}
             </template>
-
-            <!-- Custom content -->
-            <template #content="slotProps">
-              <Card class="timeline-card">
-                <template #title>
-                  {{ slotProps.item.title }}
-                </template>
-                <template #subtitle>
-                  {{ slotProps.item.date }}
-                </template>
-                <template #content>
-                  <p>{{ slotProps.item.description }}</p>
-                </template>
-              </Card>
+            <template #subtitle>
+              {{ slotProps.item.date }}
             </template>
-          </Timeline>
-        </div>
-      </div>
+            <template #content>
+              <p>
+                {{
+                  $i18n.locale === "ar"
+                    ? slotProps.item.descriptionAr
+                    : slotProps.item.description
+                }}
+              </p>
+            </template>
+          </Card>
+        </template>
+      </Timeline>
 
-      <!-- Background stars -->
+      <!-- Floating decorative particles -->
       <div class="experience-stars">
         <span
           v-for="n in 30"
@@ -54,7 +69,7 @@
       </div>
     </section>
 
-    <img loading="lazy" class="oasis w-100" src="/pngegg.png" alt="" />
+    <img loading="lazy" class="oasis w-100" src="/pngegg2.webp" alt="" />
   </UiVortex>
 </template>
 
@@ -248,49 +263,21 @@ const getStarStyle = (n) => {
   position: absolute;
   bottom: 0;
   z-index: 1;
-  /* Fade effect */
   -webkit-mask-image: linear-gradient(to bottom, transparent, black 80%);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: cover;
-
   mask-image: linear-gradient(to bottom, transparent, black 80%);
   mask-repeat: no-repeat;
   mask-size: cover;
 }
-
-.timeline-wrapper {
-  position: relative;
-  height: 80vh; /* container height */
-  overflow-y: auto;
-  padding-right: 0.5rem;
-
-  /* scrollbar styling */
-  scrollbar-width: thin;
-  scrollbar-color: #59bc90 #1a1a1a;
-}
-
-.timeline-inner {
-  position: sticky;
-  top: 0; /* sticks to top when scrolling */
-  padding: 1rem 0;
-}
-
-.custom-timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-/* Animate each card in */
+.timeline-marker,
 .timeline-card {
-  transform: translateY(30px);
-  opacity: 0;
-  transition: all 0.6s ease-out;
-}
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  cursor: pointer;
 
-.timeline-card.is-visible {
-  transform: translateY(0);
-  opacity: 1;
+  &:active {
+    transform: scale(0.92);
+    box-shadow: 0 0 20px rgba(100, 255, 218, 0.6);
+  }
 }
-
 </style>

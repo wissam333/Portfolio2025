@@ -10,7 +10,13 @@
     class=""
   >
     <section class="experience-section">
-      <h2 class="headline">Experience & Learning Journey</h2>
+      <h2 class="headline">
+        {{
+          $i18n.locale === "ar"
+            ? "رحلة الخبرة والتعلم"
+            : "Experience & Learning Journey"
+        }}
+      </h2>
 
       <Timeline :value="events" align="alternate" class="custom-timeline">
         <!-- Custom marker -->
@@ -30,13 +36,23 @@
             :data-aos="slotProps.index % 2 === 0 ? 'flip-right' : 'flip-left'"
           >
             <template #title>
-              {{ slotProps.item.title }}
+              {{
+                $i18n.locale === "ar"
+                  ? slotProps.item.titleAr
+                  : slotProps.item.title
+              }}
             </template>
             <template #subtitle>
               {{ slotProps.item.date }}
             </template>
             <template #content>
-              <p>{{ slotProps.item.description }}</p>
+              <p>
+                {{
+                  $i18n.locale === "ar"
+                    ? slotProps.item.descriptionAr
+                    : slotProps.item.description
+                }}
+              </p>
             </template>
           </Card>
         </template>
@@ -53,7 +69,7 @@
       </div>
     </section>
 
-    <img loading="lazy" class="oasis w-100" src="/pngegg.png" alt="" />
+    <img loading="lazy" class="oasis w-100" src="/pngegg2.webp" alt="" />
   </UiVortex>
 </template>
 
@@ -237,7 +253,6 @@ const getStarStyle = (n) => {
       }
 
       .timeline-card {
-        text-align: left !important; /* keep card text left-aligned even if marker flips */
       }
     }
   }
@@ -247,11 +262,9 @@ const getStarStyle = (n) => {
   position: absolute;
   bottom: 0;
   z-index: 1;
-  /* Fade effect */
   -webkit-mask-image: linear-gradient(to bottom, transparent, black 80%);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: cover;
-
   mask-image: linear-gradient(to bottom, transparent, black 80%);
   mask-repeat: no-repeat;
   mask-size: cover;
@@ -262,9 +275,8 @@ const getStarStyle = (n) => {
   cursor: pointer;
 
   &:active {
-    transform: scale(0.92); /* squish down */
-    box-shadow: 0 0 20px rgba(100, 255, 218, 0.6); /* glow effect */
+    transform: scale(0.92);
+    box-shadow: 0 0 20px rgba(100, 255, 218, 0.6);
   }
 }
-
 </style>
