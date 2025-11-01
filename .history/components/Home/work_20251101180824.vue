@@ -243,7 +243,7 @@ const secondRow = computed(() => secondRowData.value?.data || []);
         .laptop-frame {
           width: 100%;
           height: auto;
-          filter: drop-shadow(2px 4px 6px rgba(255, 255, 255, 0.148));
+          filter: drop-shadow(2px 4px 6px rgba(255, 255, 255, 0.5));
         }
 
         .website-link {

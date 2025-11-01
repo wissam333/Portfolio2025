@@ -2,9 +2,9 @@
   <div
     class="vortex-container"
     :class="cn('relative h-full w-full', props.containerClass)"
-    ref="containerRef"
   >
     <Motion
+      ref="containerRef"
       as="div"
       :initial="{ opacity: 0 }"
       :animate="{ opacity: 1 }"
@@ -21,13 +21,8 @@
 
 <script setup lang="ts">
 import { createNoise3D } from "simplex-noise";
-import { onMounted, onUnmounted, watch } from "vue";
-import {
-  templateRef,
-  useDebounceFn,
-  useRafFn,
-  useElementVisibility,
-} from "@vueuse/core";
+import { onMounted, onUnmounted } from "vue";
+import { templateRef, useDebounceFn } from "@vueuse/core";
 import { cn } from "@/lib/utils";
 
 const TAU = 2 * Math.PI;
@@ -54,7 +49,7 @@ interface VortexProps {
 }
 
 const props = withDefaults(defineProps<VortexProps>(), {
-  particleCount: 100, 
+  particleCount: 700,
   rangeY: 300,
   baseSpeed: 0.0,
   rangeSpeed: 1.5,
@@ -64,11 +59,8 @@ const props = withDefaults(defineProps<VortexProps>(), {
   backgroundColor: "#000000",
 });
 
-// Performance state
-const isPageActive = ref(true);
-const reduceMotion = ref(false);
-
 const tick = ref<number>(0);
+const animationFrame = ref<number | null>(null);
 const particleProps = shallowRef<Float32Array | null>(null);
 const center = ref<[number, number]>([0, 0]);
 const ctx = shallowRef<CanvasRenderingContext2D | null>(null);
@@ -76,121 +68,140 @@ const ctx = shallowRef<CanvasRenderingContext2D | null>(null);
 const canvasRef = templateRef<HTMLCanvasElement | null>("canvasRef");
 const containerRef = templateRef<HTMLElement | null>("containerRef");
 
-// Use VueUse's visibility hook instead of manual checking
-const isVisible = useElementVisibility(containerRef);
+const particleCache = {
+  x: 0,
+  y: 0,
+  vx: 0,
+  vy: 0,
+  life: 0,
+  ttl: 0,
+  speed: 0,
+  radius: 0,
+  hue: 0,
+};
 
 const noise3D = createNoise3D();
 
-// Optimized math functions
-const rand = (n: number) => n * Math.random();
-const randRange = (n: number): number => n - rand(2 * n);
-const fadeInOut = (t: number, m: number): number => {
+function rand(n: number) {
+  return n * Math.random();
+}
+function randRange(n: number): number {
+  return n - rand(2 * n);
+}
+function fadeInOut(t: number, m: number): number {
   const hm = 0.5 * m;
   return Math.abs(((t + hm) % m) - hm) / hm;
-};
-const lerp = (n1: number, n2: number, speed: number): number => {
+}
+function lerp(n1: number, n2: number, speed: number): number {
   return (1 - speed) * n1 + speed * n2;
-};
+}
 
 function initParticle(i: number) {
   if (!particleProps.value || !canvasRef.value) return;
 
   const canvas = canvasRef.value;
+  particleCache.x = rand(canvas.width);
+  particleCache.y = center.value[1] + randRange(props.rangeY);
+  particleCache.vx = 0;
+  particleCache.vy = 0;
+  particleCache.life = 0;
+  particleCache.ttl = BASE_TTL + rand(RANGE_TTL);
+  particleCache.speed = props.baseSpeed + rand(props.rangeSpeed);
+  particleCache.radius = props.baseRadius + rand(props.rangeRadius);
+  particleCache.hue = props.baseHue + rand(RANGE_HUE);
 
-  particleProps.value[i] = rand(canvas.width); // x
-  particleProps.value[i + 1] = center.value[1] + randRange(props.rangeY); // y
-  particleProps.value[i + 2] = 0; // vx
-  particleProps.value[i + 3] = 0; // vy
-  particleProps.value[i + 4] = 0; // life
-  particleProps.value[i + 5] = BASE_TTL + rand(RANGE_TTL); // ttl
-  particleProps.value[i + 6] = props.baseSpeed + rand(props.rangeSpeed); // speed
-  particleProps.value[i + 7] = props.baseRadius + rand(props.rangeRadius); // radius
-  particleProps.value[i + 8] = props.baseHue + rand(RANGE_HUE); // hue
+  particleProps.value.set(
+    [
+      particleCache.x,
+      particleCache.y,
+      particleCache.vx,
+      particleCache.vy,
+      particleCache.life,
+      particleCache.ttl,
+      particleCache.speed,
+      particleCache.radius,
+      particleCache.hue,
+    ],
+    i
+  );
 }
 
 function updateParticle(i: number) {
   if (!particleProps.value || !canvasRef.value || !ctx.value) return;
 
   const canvas = canvasRef.value;
-  const propsArray = particleProps.value;
+  const props = particleProps.value;
   const context = ctx.value;
 
-  const x = propsArray[i];
-  const y = propsArray[i + 1];
-  const vx = propsArray[i + 2];
-  const vy = propsArray[i + 3];
-  const life = propsArray[i + 4];
-  const ttl = propsArray[i + 5];
-  const speed = propsArray[i + 6];
-  const radius = propsArray[i + 7];
-  const hue = propsArray[i + 8];
+  particleCache.x = props[i];
+  particleCache.y = props[i + 1];
+  particleCache.vx = props[i + 2];
+  particleCache.vy = props[i + 3];
+  particleCache.life = props[i + 4];
+  particleCache.ttl = props[i + 5];
+  particleCache.speed = props[i + 6];
+  particleCache.radius = props[i + 7];
+  particleCache.hue = props[i + 8];
 
   const n =
-    noise3D(x * X_OFF, y * Y_OFF, tick.value * Z_OFF) * NOISE_STEPS * TAU;
+    noise3D(
+      particleCache.x * X_OFF,
+      particleCache.y * Y_OFF,
+      tick.value * Z_OFF
+    ) *
+    NOISE_STEPS *
+    TAU;
 
-  const nextVx = lerp(vx, Math.cos(n), 0.5);
-  const nextVy = lerp(vy, Math.sin(n), 0.5);
-  const nextX = x + nextVx * speed;
-  const nextY = y + nextVy * speed;
+  const nextVx = lerp(particleCache.vx, Math.cos(n), 0.5);
+  const nextVy = lerp(particleCache.vy, Math.sin(n), 0.5);
+  const nextX = particleCache.x + nextVx * particleCache.speed;
+  const nextY = particleCache.y + nextVy * particleCache.speed;
 
-  // Restore the original visual style with proper glow effect
-  const alpha = fadeInOut(life, ttl);
-
-  // Individual stroke for each particle to maintain the firefly look
   context.save();
   context.lineCap = "round";
-  context.lineWidth = radius;
-  context.strokeStyle = `hsla(${hue},100%,60%,${alpha})`;
+  context.lineWidth = particleCache.radius;
+  context.strokeStyle = `hsla(${particleCache.hue},100%,60%,${fadeInOut(
+    particleCache.life,
+    particleCache.ttl
+  )})`;
   context.beginPath();
-  context.moveTo(x, y);
+  context.moveTo(particleCache.x, particleCache.y);
   context.lineTo(nextX, nextY);
   context.stroke();
   context.restore();
 
-  propsArray[i] = nextX;
-  propsArray[i + 1] = nextY;
-  propsArray[i + 2] = nextVx;
-  propsArray[i + 3] = nextVy;
-  propsArray[i + 4] = life + 1;
+  props[i] = nextX;
+  props[i + 1] = nextY;
+  props[i + 2] = nextVx;
+  props[i + 3] = nextVy;
+  props[i + 4] = particleCache.life + 1;
 
   if (
     nextX > canvas.width ||
     nextX < 0 ||
     nextY > canvas.height ||
     nextY < 0 ||
-    life > ttl
+    particleCache.life > particleCache.ttl
   ) {
     initParticle(i);
   }
 }
 
 function draw() {
-  if (
-    !canvasRef.value ||
-    !ctx.value ||
-    !particleProps.value ||
-    !isVisible.value ||
-    !isPageActive.value ||
-    reduceMotion.value
-  ) {
-    return;
-  }
+  if (!canvasRef.value || !ctx.value || !particleProps.value) return;
 
   const canvas = canvasRef.value;
   const context = ctx.value;
 
   tick.value++;
 
-  // Clear canvas
   context.fillStyle = props.backgroundColor;
   context.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Update all particles to maintain the dense firefly effect
   for (let i = 0; i < particleProps.value.length; i += PARTICLE_PROP_COUNT) {
     updateParticle(i);
   }
 
-  // Restore the original glow effects - this is essential for the visual style
   context.save();
   context.filter = "blur(8px) brightness(200%)";
   context.globalCompositeOperation = "lighter";
@@ -202,53 +213,19 @@ function draw() {
   context.globalCompositeOperation = "lighter";
   context.drawImage(canvas, 0, 0);
   context.restore();
-}
 
-// Use vueuse's optimized RAF loop
-const { pause: pauseAnimation, resume: resumeAnimation } = useRafFn(draw, {
-  immediate: false,
-});
+  animationFrame.value = requestAnimationFrame(draw);
+}
 
 const handleResize = useDebounceFn(() => {
   if (!canvasRef.value) return;
 
   const canvas = canvasRef.value;
   const { innerWidth, innerHeight } = window;
-
   canvas.width = innerWidth;
   canvas.height = innerHeight;
   center.value = [0.5 * canvas.width, 0.5 * canvas.height];
-
-  // Reinitialize particles on resize to maintain distribution
-  if (particleProps.value) {
-    for (let i = 0; i < particleProps.value.length; i += PARTICLE_PROP_COUNT) {
-      initParticle(i);
-    }
-  }
 }, 150);
-
-function handleVisibilityChange() {
-  isPageActive.value = !document.hidden;
-}
-
-function checkReduceMotion() {
-  reduceMotion.value = window.matchMedia(
-    "(prefers-reduced-motion: reduce)"
-  ).matches;
-}
-
-// Watch performance conditions
-watch(
-  [isVisible, isPageActive, reduceMotion],
-  ([visible, active, reduced]) => {
-    if (visible && active && !reduced) {
-      resumeAnimation();
-    } else {
-      pauseAnimation();
-    }
-  },
-  { immediate: true }
-);
 
 onMounted(() => {
   const canvas = canvasRef.value;
@@ -268,49 +245,36 @@ onMounted(() => {
     initParticle(i);
   }
 
-  // Initialize performance monitoring
-  checkReduceMotion();
-
+  draw();
   window.addEventListener("resize", handleResize);
-  document.addEventListener("visibilitychange", handleVisibilityChange);
 });
 
 onUnmounted(() => {
-  pauseAnimation();
+  if (animationFrame.value) {
+    cancelAnimationFrame(animationFrame.value);
+  }
   window.removeEventListener("resize", handleResize);
-  document.removeEventListener("visibilitychange", handleVisibilityChange);
 
   ctx.value = null;
   particleProps.value = null;
 });
 </script>
-
 <style lang="scss" scoped>
 .vortex-container {
   position: relative;
   width: 100%;
   height: 100%;
 }
-
 .canvas {
   position: absolute;
-  inset: 0;
+  inset: 0; /* top:0; right:0; bottom:0; left:0 */
   width: 100%;
   height: 100%;
   z-index: 1 !important;
-
   canvas {
     display: block;
     width: 100% !important;
     height: 100% !important;
-  }
-}
-
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-  .canvas {
-    opacity: 0.3;
-    animation: none;
   }
 }
 </style>

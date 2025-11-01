@@ -22,12 +22,7 @@
 <script setup lang="ts">
 import { createNoise3D } from "simplex-noise";
 import { onMounted, onUnmounted, watch } from "vue";
-import {
-  templateRef,
-  useDebounceFn,
-  useRafFn,
-  useElementVisibility,
-} from "@vueuse/core";
+import { templateRef, useDebounceFn, useRafFn, useElementVisibility } from "@vueuse/core";
 import { cn } from "@/lib/utils";
 
 const TAU = 2 * Math.PI;
@@ -54,7 +49,7 @@ interface VortexProps {
 }
 
 const props = withDefaults(defineProps<VortexProps>(), {
-  particleCount: 100, 
+  particleCount: 300, // Reduced default count
   rangeY: 300,
   baseSpeed: 0.0,
   rangeSpeed: 1.5,
@@ -79,6 +74,19 @@ const containerRef = templateRef<HTMLElement | null>("containerRef");
 // Use VueUse's visibility hook instead of manual checking
 const isVisible = useElementVisibility(containerRef);
 
+// Performance optimizations
+const particleCache = {
+  x: 0,
+  y: 0,
+  vx: 0,
+  vy: 0,
+  life: 0,
+  ttl: 0,
+  speed: 0,
+  radius: 0,
+  hue: 0,
+};
+
 const noise3D = createNoise3D();
 
 // Optimized math functions
@@ -96,16 +104,33 @@ function initParticle(i: number) {
   if (!particleProps.value || !canvasRef.value) return;
 
   const canvas = canvasRef.value;
+  const canvasWidth = canvas.width;
+  const canvasHeight = canvas.height;
+  
+  particleCache.x = rand(canvasWidth);
+  particleCache.y = center.value[1] + randRange(props.rangeY);
+  particleCache.vx = 0;
+  particleCache.vy = 0;
+  particleCache.life = 0;
+  particleCache.ttl = BASE_TTL + rand(RANGE_TTL);
+  particleCache.speed = props.baseSpeed + rand(props.rangeSpeed);
+  particleCache.radius = props.baseRadius + rand(props.rangeRadius);
+  particleCache.hue = props.baseHue + rand(RANGE_HUE);
 
-  particleProps.value[i] = rand(canvas.width); // x
-  particleProps.value[i + 1] = center.value[1] + randRange(props.rangeY); // y
-  particleProps.value[i + 2] = 0; // vx
-  particleProps.value[i + 3] = 0; // vy
-  particleProps.value[i + 4] = 0; // life
-  particleProps.value[i + 5] = BASE_TTL + rand(RANGE_TTL); // ttl
-  particleProps.value[i + 6] = props.baseSpeed + rand(props.rangeSpeed); // speed
-  particleProps.value[i + 7] = props.baseRadius + rand(props.rangeRadius); // radius
-  particleProps.value[i + 8] = props.baseHue + rand(RANGE_HUE); // hue
+  particleProps.value.set(
+    [
+      particleCache.x,
+      particleCache.y,
+      particleCache.vx,
+      particleCache.vy,
+      particleCache.life,
+      particleCache.ttl,
+      particleCache.speed,
+      particleCache.radius,
+      particleCache.hue,
+    ],
+    i
+  );
 }
 
 function updateParticle(i: number) {
@@ -115,6 +140,7 @@ function updateParticle(i: number) {
   const propsArray = particleProps.value;
   const context = ctx.value;
 
+  // Direct array access for performance
   const x = propsArray[i];
   const y = propsArray[i + 1];
   const vx = propsArray[i + 2];
@@ -125,27 +151,23 @@ function updateParticle(i: number) {
   const radius = propsArray[i + 7];
   const hue = propsArray[i + 8];
 
-  const n =
-    noise3D(x * X_OFF, y * Y_OFF, tick.value * Z_OFF) * NOISE_STEPS * TAU;
+  const n = noise3D(x * X_OFF, y * Y_OFF, tick.value * Z_OFF) * NOISE_STEPS * TAU;
 
   const nextVx = lerp(vx, Math.cos(n), 0.5);
   const nextVy = lerp(vy, Math.sin(n), 0.5);
   const nextX = x + nextVx * speed;
   const nextY = y + nextVy * speed;
 
-  // Restore the original visual style with proper glow effect
+  // Batch drawing operations
   const alpha = fadeInOut(life, ttl);
-
-  // Individual stroke for each particle to maintain the firefly look
-  context.save();
-  context.lineCap = "round";
-  context.lineWidth = radius;
-  context.strokeStyle = `hsla(${hue},100%,60%,${alpha})`;
+  
+  // Use path batching for better performance
   context.beginPath();
   context.moveTo(x, y);
   context.lineTo(nextX, nextY);
+  context.lineWidth = radius;
+  context.strokeStyle = `hsla(${hue},100%,60%,${alpha})`;
   context.stroke();
-  context.restore();
 
   propsArray[i] = nextX;
   propsArray[i + 1] = nextY;
@@ -153,6 +175,7 @@ function updateParticle(i: number) {
   propsArray[i + 3] = nextVy;
   propsArray[i + 4] = life + 1;
 
+  // Recycle particles efficiently
   if (
     nextX > canvas.width ||
     nextX < 0 ||
@@ -165,14 +188,7 @@ function updateParticle(i: number) {
 }
 
 function draw() {
-  if (
-    !canvasRef.value ||
-    !ctx.value ||
-    !particleProps.value ||
-    !isVisible.value ||
-    !isPageActive.value ||
-    reduceMotion.value
-  ) {
+  if (!canvasRef.value || !ctx.value || !particleProps.value || !isVisible.value || !isPageActive.value || reduceMotion.value) {
     return;
   }
 
@@ -181,81 +197,85 @@ function draw() {
 
   tick.value++;
 
-  // Clear canvas
+  // Clear canvas efficiently
   context.fillStyle = props.backgroundColor;
   context.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Update all particles to maintain the dense firefly effect
-  for (let i = 0; i < particleProps.value.length; i += PARTICLE_PROP_COUNT) {
+  // Update all particles (simplified from batching for stability)
+  const totalParticles = particleProps.value.length;
+  for (let i = 0; i < totalParticles; i += PARTICLE_PROP_COUNT) {
     updateParticle(i);
   }
 
-  // Restore the original glow effects - this is essential for the visual style
+  // Reduced post-processing for performance
   context.save();
-  context.filter = "blur(8px) brightness(200%)";
+  context.filter = "blur(4px) brightness(150%)";
   context.globalCompositeOperation = "lighter";
   context.drawImage(canvas, 0, 0);
   context.restore();
 
-  context.save();
-  context.filter = "blur(4px) brightness(200%)";
-  context.globalCompositeOperation = "lighter";
-  context.drawImage(canvas, 0, 0);
-  context.restore();
+  // Only apply heavy effects occasionally
+  if (tick.value % 3 === 0) {
+    context.save();
+    context.filter = "blur(2px) brightness(120%)";
+    context.globalCompositeOperation = "lighter";
+    context.drawImage(canvas, 0, 0);
+    context.restore();
+  }
 }
 
 // Use vueuse's optimized RAF loop
-const { pause: pauseAnimation, resume: resumeAnimation } = useRafFn(draw, {
-  immediate: false,
-});
+const { pause: pauseAnimation, resume: resumeAnimation } = useRafFn(draw, { immediate: false });
 
 const handleResize = useDebounceFn(() => {
   if (!canvasRef.value) return;
 
   const canvas = canvasRef.value;
   const { innerWidth, innerHeight } = window;
-
-  canvas.width = innerWidth;
-  canvas.height = innerHeight;
-  center.value = [0.5 * canvas.width, 0.5 * canvas.height];
-
-  // Reinitialize particles on resize to maintain distribution
-  if (particleProps.value) {
-    for (let i = 0; i < particleProps.value.length; i += PARTICLE_PROP_COUNT) {
-      initParticle(i);
+  
+  // Only resize if dimensions changed significantly
+  if (Math.abs(canvas.width - innerWidth) > 50 || Math.abs(canvas.height - innerHeight) > 50) {
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+    center.value = [0.5 * canvas.width, 0.5 * canvas.height];
+    
+    // Reinitialize particles on resize
+    if (particleProps.value) {
+      const particlePropsLength = particleProps.value.length;
+      for (let i = 0; i < particlePropsLength; i += PARTICLE_PROP_COUNT) {
+        initParticle(i);
+      }
     }
   }
-}, 150);
+}, 200);
 
 function handleVisibilityChange() {
   isPageActive.value = !document.hidden;
 }
 
 function checkReduceMotion() {
-  reduceMotion.value = window.matchMedia(
-    "(prefers-reduced-motion: reduce)"
-  ).matches;
+  reduceMotion.value = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
 // Watch performance conditions
-watch(
-  [isVisible, isPageActive, reduceMotion],
-  ([visible, active, reduced]) => {
-    if (visible && active && !reduced) {
-      resumeAnimation();
-    } else {
-      pauseAnimation();
-    }
-  },
-  { immediate: true }
-);
+watch([isVisible, isPageActive, reduceMotion], ([visible, active, reduced]) => {
+  if (visible && active && !reduced) {
+    resumeAnimation();
+  } else {
+    pauseAnimation();
+  }
+}, { immediate: true });
 
 onMounted(() => {
   const canvas = canvasRef.value;
   if (!canvas) return;
 
-  ctx.value = canvas.getContext("2d");
+  ctx.value = canvas.getContext("2d", { alpha: false }); // Disable alpha for better performance
   if (!ctx.value) return;
+
+  // Set canvas context properties once
+  ctx.value.lineCap = "round";
+  ctx.value.imageSmoothingEnabled = false;
 
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -270,15 +290,17 @@ onMounted(() => {
 
   // Initialize performance monitoring
   checkReduceMotion();
-
+  
   window.addEventListener("resize", handleResize);
-  document.addEventListener("visibilitychange", handleVisibilityChange);
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+
+  // Start animation if conditions are met (handled by watcher)
 });
 
 onUnmounted(() => {
   pauseAnimation();
   window.removeEventListener("resize", handleResize);
-  document.removeEventListener("visibilitychange", handleVisibilityChange);
+  document.removeEventListener('visibilitychange', handleVisibilityChange);
 
   ctx.value = null;
   particleProps.value = null;
@@ -290,6 +312,8 @@ onUnmounted(() => {
   position: relative;
   width: 100%;
   height: 100%;
+  /* GPU acceleration */
+  transform: translate3d(0, 0, 0);
 }
 
 .canvas {
@@ -298,19 +322,25 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   z-index: 1 !important;
-
+  /* Performance optimizations */
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000;
+  
   canvas {
     display: block;
     width: 100% !important;
     height: 100% !important;
+    /* Optimize canvas rendering */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
   }
 }
 
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   .canvas {
-    opacity: 0.3;
-    animation: none;
+    opacity: 0.5;
   }
 }
 </style>

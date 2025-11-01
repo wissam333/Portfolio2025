@@ -147,11 +147,11 @@
     </div>
 
     <!-- Debug Controls -->
-    <!-- <div class="debug-controls">
+    <div class="debug-controls">
       <button @click="cycleSeason">Cycle Season</button>
       <button @click="cycleMoonPhase">Cycle Moon</button>
       <span>Current: {{ currentSeason }} - {{ moonPhaseName }}</span>
-    </div> -->
+    </div>
   </div>
 </template>
 <script setup>

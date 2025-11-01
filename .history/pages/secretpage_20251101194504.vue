@@ -3,13 +3,26 @@
     <!-- Dynamic Background based on Season -->
     <div class="season-background"></div>
 
-    <!-- REALISTIC Moon using the reference technique -->
-    <div class="moon" :style="moonGlowStyle" @click="toggleMoonInfo">
-      <div class="moon-before" :style="moonBeforeStyle"></div>
-      <div class="moon-after" :style="moonAfterStyle"></div>
+    <!-- Moon that changes with real moon phases -->
+    <div
+      class="moon"
+      :class="moonPhaseClass"
+      :style="moonStyle"
+      @click="toggleMoonInfo"
+    >
+      <div class="moon-surface">
+        <div
+          v-for="crater in moonCraters"
+          :key="crater.id"
+          class="moon-crater"
+          :style="crater.style"
+        ></div>
+      </div>
+      <!-- CHANGED: Use moon-phase-mask instead of moon-phase-overlay -->
+      <div class="moon-phase-mask" :style="moonPhaseMaskStyle"></div>
     </div>
 
-    <!-- Rest of your seasonal elements -->
+    <!-- Winter: Snowfall -->
     <div v-if="currentSeason === 'winter'" class="snowfall">
       <div
         v-for="(snowflake, index) in snowflakes"
@@ -41,6 +54,7 @@
       <div class="snow-pile"></div>
     </div>
 
+    <!-- Summer: Fireflies Vortex -->
     <div v-if="currentSeason === 'summer'" class="fireflies-vortex">
       <div
         v-for="(firefly, index) in fireflies"
@@ -71,6 +85,7 @@
       </div>
     </div>
 
+    <!-- Spring: Cherry Blossoms -->
     <div v-if="currentSeason === 'spring'" class="cherry-blossoms">
       <div
         v-for="(petal, index) in petals"
@@ -102,6 +117,7 @@
       </div>
     </div>
 
+    <!-- Autumn: Falling Leaves -->
     <div v-if="currentSeason === 'autumn'" class="falling-leaves">
       <div
         v-for="(leaf, index) in leaves"
@@ -146,25 +162,23 @@
       </div>
     </div>
 
-    <!-- Debug Controls -->
-    <!-- <div class="debug-controls">
+    <!-- Debug Controls (remove in production) -->
+    <div class="debug-controls">
       <button @click="cycleSeason">Cycle Season</button>
       <button @click="cycleMoonPhase">Cycle Moon</button>
       <span>Current: {{ currentSeason }} - {{ moonPhaseName }}</span>
-    </div> -->
+    </div>
   </div>
 </template>
+
 <script setup>
-definePageMeta({
-  layout: "empty",
-});
 // Seasonal state
 const currentSeason = ref("winter");
 const hoveredElement = ref(null);
 const showInfo = ref(false);
 
 // Moon phase calculations
-const moonIllumination = ref(0.5);
+const moonIllumination = ref(0);
 const moonPhaseName = ref("");
 const moonPhaseClass = ref("");
 
@@ -174,195 +188,40 @@ const fireflies = ref([]);
 const petals = ref([]);
 const leaves = ref([]);
 
+// Moon craters for realism
+const moonCraters = ref([
+  { id: 1, style: { top: "20%", left: "30%", width: "8px", height: "8px" } },
+  { id: 2, style: { top: "60%", left: "50%", width: "12px", height: "12px" } },
+  { id: 3, style: { top: "40%", left: "70%", width: "6px", height: "6px" } },
+  { id: 4, style: { top: "75%", left: "25%", width: "10px", height: "10px" } },
+]);
+
+// Calculate real moon phase (simplified)
 const calculateMoonPhase = () => {
+  // This is a simplified calculation - in production, use a proper astronomy library
   const now = new Date();
+  const startOfCycle = new Date("2024-01-01"); // Arbitrary start date
+  const daysInCycle = 29.53;
+  const daysSinceStart = (now - startOfCycle) / (1000 * 60 * 60 * 24);
+  const cyclePosition = (daysSinceStart % daysInCycle) / daysInCycle;
 
-  // Convert to Julian date
-  const toJulian = (date) => date.getTime() / 86400000 + 2440587.5;
-  const jd = toJulian(now);
-  const T = (jd - 2451545.0) / 36525;
+  moonIllumination.value = Math.abs(Math.sin(cyclePosition * Math.PI));
 
-  const D =
-    297.8501921 +
-    445267.1114034 * T -
-    0.0018819 * T * T +
-    (T * T * T) / 545868 -
-    (T * T * T * T) / 113065000;
-
-  const M =
-    357.5291092 +
-    35999.0502909 * T -
-    0.0001536 * T * T +
-    (T * T * T) / 24490000;
-
-  const Mprime =
-    134.9633964 +
-    477198.8675055 * T +
-    0.0087414 * T * T +
-    (T * T * T) / 69699 -
-    (T * T * T * T) / 14712000;
-
-  const rad = Math.PI / 180;
-
-  // Phase angle (Meeus)
-  let phaseAngle =
-    180 -
-    D -
-    6.289 * Math.sin(rad * Mprime) +
-    2.100 * Math.sin(rad * M) -
-    1.274 * Math.sin(rad * (2 * D - Mprime)) -
-    0.658 * Math.sin(rad * (2 * D)) -
-    0.214 * Math.sin(rad * (2 * Mprime)) -
-    0.110 * Math.sin(rad * D);
-
-  // Normalize
-  phaseAngle = ((phaseAngle % 360) + 360) % 360;
-
-  // Illumination from 0 (new) to 1 (full)
-  const illumination = (1 - Math.cos(rad * phaseAngle)) / 2;
-  moonIllumination.value = illumination;
-
-  // Waxing if angle <= 180
-  const waxing = phaseAngle <= 180;
-
-  let phaseName = "";
-  if (illumination < 0.03) phaseName = "New Moon";
-  else if (illumination < 0.25)
-    phaseName = waxing ? "Waxing Crescent" : "Waning Crescent";
-  else if (illumination < 0.55)
-    phaseName = waxing ? "First Quarter" : "Last Quarter";
-  else if (illumination < 0.97)
-    phaseName = waxing ? "Waxing Gibbous" : "Waning Gibbous";
-  else phaseName = "Full Moon";
-
-  return phaseName;
+  // Determine phase name
+  if (cyclePosition < 0.125) return "New Moon";
+  if (cyclePosition < 0.25) return "Waxing Crescent";
+  if (cyclePosition < 0.375) return "First Quarter";
+  if (cyclePosition < 0.5) return "Waxing Gibbous";
+  if (cyclePosition < 0.625) return "Full Moon";
+  if (cyclePosition < 0.75) return "Waning Gibbous";
+  if (cyclePosition < 0.875) return "Last Quarter";
+  return "Waning Crescent";
 };
-
-// REALISTIC: Moon phase styles based on the reference
-const moonBeforeStyle = computed(() => {
-  const illumination = moonIllumination.value;
-  const isWaxing =
-    moonPhaseName.value.includes("Waxing") ||
-    moonPhaseName.value === "First Quarter";
-
-  if (illumination === 0) {
-    // New Moon - completely dark
-    return {
-      opacity: 1,
-      background: "#000",
-      boxShadow: "inset 0px 0 7px 0px #B5BCC6",
-      borderRadius: "50%",
-      transform: "rotate(0deg)",
-    };
-  } else if (illumination === 1) {
-    // Full Moon - completely lit
-    return {
-      opacity: 0,
-      background: "#B5BCC6",
-      boxShadow: "inset 0 0 7px 0px #000",
-      borderRadius: "50%",
-      transform: "rotate(180deg)",
-    };
-  }
-
-  if (isWaxing) {
-    // Waxing phases (shadow on left)
-    const shadowPosition = illumination * 110;
-    return {
-      opacity: 1,
-      background: illumination < 0.5 ? "#000" : "#B5BCC6",
-      boxShadow: `inset ${shadowPosition}px 0 7px 0px ${
-        illumination < 0.5 ? "#B5BCC6" : "#000"
-      }`,
-      borderRadius: illumination === 0.5 ? "0" : "50%",
-      transform: illumination < 0.5 ? "rotate(0deg)" : "rotate(180deg)",
-    };
-  } else {
-    // Waning phases (shadow on right)
-    const shadowPosition = illumination * 110;
-    return {
-      opacity: 1,
-      background: illumination > 0.5 ? "#000" : "#B5BCC6",
-      boxShadow: `inset ${-shadowPosition}px 0 7px 0px ${
-        illumination > 0.5 ? "#B5BCC6" : "#000"
-      }`,
-      borderRadius: illumination === 0.5 ? "0" : "50%",
-      transform: illumination > 0.5 ? "rotate(0deg)" : "rotate(180deg)",
-    };
-  }
-});
-
-const moonAfterStyle = computed(() => {
-  const illumination = moonIllumination.value;
-  const isWaxing =
-    moonPhaseName.value.includes("Waxing") ||
-    moonPhaseName.value === "First Quarter";
-
-  if (illumination === 0) {
-    // New Moon
-    return {
-      opacity: 0,
-      background: "#B5BCC6",
-      boxShadow: "inset 0px 0 7px 0px #000",
-      borderRadius: "50%",
-      transform: "rotate(0deg)",
-    };
-  } else if (illumination === 1) {
-    // Full Moon
-    return {
-      opacity: 1,
-      background: "#B5BCC6",
-      boxShadow: "inset 0 0 7px 0px #B5BCC6",
-      borderRadius: "50%",
-      transform: "rotate(0deg)",
-    };
-  }
-
-  if (isWaxing) {
-    // Waxing phases
-    return {
-      opacity: 0,
-      background: "#B5BCC6",
-      boxShadow: "inset 0px 0 7px 0px #000",
-      borderRadius: "50%",
-      transform: "rotate(0deg)",
-    };
-  } else {
-    // Waning phases
-    const shadowPosition = (1 - illumination) * 110;
-    return {
-      opacity: 1,
-      background: illumination > 0.5 ? "#B5BCC6" : "#000",
-      boxShadow: `inset ${shadowPosition}px 0 7px 0px ${
-        illumination > 0.5 ? "#000" : "#B5BCC6"
-      }`,
-      borderRadius: illumination === 0.5 ? "0" : "50%",
-      transform: illumination > 0.5 ? "rotate(0deg)" : "rotate(180deg)",
-    };
-  }
-});
-
-// Moon glow style
-const moonGlowStyle = computed(() => {
-  const illumination = moonIllumination.value;
-
-  if (illumination === 0) {
-    return {
-      boxShadow: "none",
-    };
-  }
-
-  return {
-    boxShadow: `0 0 ${20 + illumination * 40}px ${
-      5 + illumination * 15
-    }px rgba(181, 188, 198, ${0.1 + illumination * 0.3})`,
-  };
-});
 
 // Determine current season based on real date
 const getCurrentSeason = () => {
   const now = new Date();
-  const month = now.getMonth() + 1;
+  const month = now.getMonth() + 1; // 1-12
 
   if (month >= 12 || month <= 2) return "winter";
   if (month >= 3 && month <= 5) return "spring";
@@ -380,6 +239,18 @@ const seasonDisplayName = computed(() => {
   };
   return names[currentSeason.value];
 });
+
+// Moon style based on phase
+const moonStyle = computed(() => ({
+  boxShadow: `0 0 ${20 + moonIllumination.value * 30}px ${
+    5 + moonIllumination.value * 10
+  }px rgba(255, 255, 200, ${0.1 + moonIllumination.value * 0.2})`,
+}));
+
+const moonPhaseStyle = computed(() => ({
+  transform: `scale(${1 - moonIllumination.value})`,
+  opacity: 0.8 - moonIllumination.value * 0.6,
+}));
 
 // Initialize seasonal elements
 const createSnowflakes = (count = 80) => {
@@ -461,7 +332,7 @@ const toggleMoonInfo = () => {
   showInfo.value = !showInfo.value;
 };
 
-// Debug functions
+// Debug functions (remove in production)
 const cycleSeason = () => {
   const seasons = ["winter", "spring", "summer", "autumn"];
   const currentIndex = seasons.indexOf(currentSeason.value);
@@ -469,42 +340,30 @@ const cycleSeason = () => {
 };
 
 const cycleMoonPhase = () => {
-  const phases = [
-    { name: "New Moon", illumination: 0 },
-    { name: "Waxing Crescent", illumination: 0.25 },
-    { name: "First Quarter", illumination: 0.5 },
-    { name: "Waxing Gibbous", illumination: 0.75 },
-    { name: "Full Moon", illumination: 1 },
-    { name: "Waning Gibbous", illumination: 0.75 },
-    { name: "Last Quarter", illumination: 0.5 },
-    { name: "Waning Crescent", illumination: 0.25 },
-  ];
-
-  const currentIndex = phases.findIndex(
-    (phase) => phase.name === moonPhaseName.value
-  );
-  const nextIndex = (currentIndex + 1) % phases.length;
-
-  moonPhaseName.value = phases[nextIndex].name;
-  moonIllumination.value = phases[nextIndex].illumination;
-  moonPhaseClass.value = moonPhaseName.value.toLowerCase().replace(" ", "-");
+  moonIllumination.value = (moonIllumination.value + 0.1) % 1;
+  moonPhaseName.value = calculateMoonPhase();
 };
 
 // Initialize
 onMounted(() => {
+  // Set real season and moon phase
   currentSeason.value = getCurrentSeason();
   moonPhaseName.value = calculateMoonPhase();
+
+  // Set moon phase class for CSS
   moonPhaseClass.value = moonPhaseName.value.toLowerCase().replace(" ", "-");
 
+  // Initialize seasonal elements
   snowflakes.value = createSnowflakes(100);
   fireflies.value = createFireflies(50);
   petals.value = createPetals(60);
   leaves.value = createLeaves(45);
 
+  // Update moon phase periodically
   setInterval(() => {
     moonPhaseName.value = calculateMoonPhase();
     moonPhaseClass.value = moonPhaseName.value.toLowerCase().replace(" ", "-");
-  }, 3600000);
+  }, 60000); // Update every minute
 });
 
 // Adjust element density on resize
@@ -567,6 +426,89 @@ onMounted(() => {
       rgba(255, 255, 255, 0.05) 0%,
       transparent 50%
     );
+}
+
+/* Moon Styles */
+.moon {
+  position: absolute;
+  top: 10%;
+  right: 10%;
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #f0f0aa 0%, #e0e0c0 100%);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 1s ease;
+  z-index: 10;
+}
+
+.moon-surface {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.moon-crater {
+  position: absolute;
+  background: rgba(200, 200, 150, 0.3);
+  border-radius: 50%;
+}
+
+.moon-phase-overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #0a0a2a;
+  border-radius: 50%;
+  transition: all 2s ease;
+  transform-origin: center;
+}
+
+/* NEW: Moon phase mask using clip-path */
+.moon-phase-mask {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #0a0a2a; /* Dark space color */
+  border-radius: 50%;
+  transition: all 2s ease;
+  transform-origin: center;
+}
+
+/* Moon phase specific styles */
+.moon.new-moon .moon-phase-mask {
+  clip-path: inset(0 0 0 100%);
+}
+
+.moon.waxing-crescent .moon-phase-mask {
+  clip-path: inset(0 60% 0 0);
+}
+
+.moon.first-quarter .moon-phase-mask {
+  clip-path: inset(0 50% 0 0);
+}
+
+.moon.waxing-gibbous .moon-phase-mask {
+  clip-path: inset(0 25% 0 0);
+}
+
+.moon.full-moon .moon-phase-mask {
+  clip-path: inset(0 0 0 0);
+  opacity: 0;
+}
+
+.moon.waning-gibbous .moon-phase-mask {
+  clip-path: inset(0 0 0 25%);
+}
+
+.moon.last-quarter .moon-phase-mask {
+  clip-path: inset(0 0 0 50%);
+}
+
+.moon.waning-crescent .moon-phase-mask {
+  clip-path: inset(0 0 0 60%);
 }
 
 /* Winter Snowfall */
@@ -945,68 +887,78 @@ onMounted(() => {
       transparent 50%
     );
 }
+
+/* Moon Styles */
 .moon {
   position: absolute;
   top: 10%;
   right: 10%;
   width: 80px;
   height: 80px;
-  margin: 0 auto;
-  position: absolute;
-  clip-path: circle(40px at center);
+  background: linear-gradient(135deg, #f0f0aa 0%, #e0e0c0 100%);
   border-radius: 50%;
-  background: #b5bcc6;
-  overflow: hidden;
   cursor: pointer;
-  transition: all 3s ease;
+  transition: all 1s ease;
   z-index: 10;
+  overflow: hidden; /* Important for clip-path to work */
 }
 
-.moon-before,
-.moon-after {
-  border-radius: 50%;
-  content: "";
+.moon-surface {
   position: absolute;
-  top: -4%;
-  left: -4%;
-  height: 108%;
-  width: 108%;
-  transition: all 3s ease;
-}
-
-.moon-before {
-  background: #000000;
-  box-shadow: inset -10px 0 7px 0px #b5bcc6;
-}
-
-.moon-after {
-  background: #b5bcc6;
-  box-shadow: inset -10px 0 7px 0px #b5bcc6;
-}
-
-/* Rest of your existing CSS styles remain the same */
-.seasonal-container {
-  position: relative;
   width: 100%;
-  height: 100vh;
+  height: 100%;
+  border-radius: 50%;
   overflow: hidden;
-  transition: all 2s ease-in-out;
 }
 
-/* Seasonal Background Colors */
-.seasonal-container.winter {
-  background: linear-gradient(180deg, #000000 0%, #0e0a1f 50%, #0e0a1f 100%);
+.moon-crater {
+  position: absolute;
+  background: rgba(200, 200, 150, 0.3);
+  border-radius: 50%;
 }
 
-.seasonal-container.spring {
-  background: linear-gradient(180deg, #000000 0%, #121612 50%, #121612 100%);
+/* Moon phase mask using clip-path */
+.moon-phase-mask {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #0a0a2a; /* Dark space color */
+  border-radius: 50%;
+  transition: all 2s ease;
+  transform-origin: center;
 }
 
-.seasonal-container.summer {
-  background: linear-gradient(180deg, #000000 0%, #151519 50%, #151519 100%);
+/* Moon phase specific styles */
+.moon.new-moon .moon-phase-mask {
+  clip-path: inset(0 0 0 100%);
 }
 
-.seasonal-container.autumn {
-  background: linear-gradient(180deg, #000000 0%, #201a15 50%, #201a15 100%);
+.moon.waxing-crescent .moon-phase-mask {
+  clip-path: inset(0 60% 0 0);
+}
+
+.moon.first-quarter .moon-phase-mask {
+  clip-path: inset(0 50% 0 0);
+}
+
+.moon.waxing-gibbous .moon-phase-mask {
+  clip-path: inset(0 25% 0 0);
+}
+
+.moon.full-moon .moon-phase-mask {
+  clip-path: inset(0 0 0 0);
+  opacity: 0;
+}
+
+.moon.waning-gibbous .moon-phase-mask {
+  clip-path: inset(0 0 0 25%);
+}
+
+.moon.last-quarter .moon-phase-mask {
+  clip-path: inset(0 0 0 50%);
+}
+
+.moon.waning-crescent .moon-phase-mask {
+  clip-path: inset(0 0 0 60%);
 }
 </style>

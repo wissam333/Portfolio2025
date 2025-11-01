@@ -147,17 +147,14 @@
     </div>
 
     <!-- Debug Controls -->
-    <!-- <div class="debug-controls">
+    <div class="debug-controls">
       <button @click="cycleSeason">Cycle Season</button>
       <button @click="cycleMoonPhase">Cycle Moon</button>
       <span>Current: {{ currentSeason }} - {{ moonPhaseName }}</span>
-    </div> -->
+    </div>
   </div>
 </template>
 <script setup>
-definePageMeta({
-  layout: "empty",
-});
 // Seasonal state
 const currentSeason = ref("winter");
 const hoveredElement = ref(null);
@@ -174,66 +171,43 @@ const fireflies = ref([]);
 const petals = ref([]);
 const leaves = ref([]);
 
+// REALISTIC: Calculate moon phase with proper illumination
 const calculateMoonPhase = () => {
   const now = new Date();
+  const startOfCycle = new Date("2024-01-11");
+  const daysInCycle = 29.53;
+  const daysSinceNewMoon =
+    ((now - startOfCycle) / (1000 * 60 * 60 * 24)) % daysInCycle;
 
-  // Convert to Julian date
-  const toJulian = (date) => date.getTime() / 86400000 + 2440587.5;
-  const jd = toJulian(now);
-  const T = (jd - 2451545.0) / 36525;
+  // Calculate phase angle (0 to 360 degrees)
+  const phaseAngle = (daysSinceNewMoon / daysInCycle) * 360;
 
-  const D =
-    297.8501921 +
-    445267.1114034 * T -
-    0.0018819 * T * T +
-    (T * T * T) / 545868 -
-    (T * T * T * T) / 113065000;
+  // Realistic illumination calculation
+  moonIllumination.value = (1 - Math.cos((phaseAngle * Math.PI) / 180)) / 2;
 
-  const M =
-    357.5291092 +
-    35999.0502909 * T -
-    0.0001536 * T * T +
-    (T * T * T) / 24490000;
-
-  const Mprime =
-    134.9633964 +
-    477198.8675055 * T +
-    0.0087414 * T * T +
-    (T * T * T) / 69699 -
-    (T * T * T * T) / 14712000;
-
-  const rad = Math.PI / 180;
-
-  // Phase angle (Meeus)
-  let phaseAngle =
-    180 -
-    D -
-    6.289 * Math.sin(rad * Mprime) +
-    2.100 * Math.sin(rad * M) -
-    1.274 * Math.sin(rad * (2 * D - Mprime)) -
-    0.658 * Math.sin(rad * (2 * D)) -
-    0.214 * Math.sin(rad * (2 * Mprime)) -
-    0.110 * Math.sin(rad * D);
-
-  // Normalize
-  phaseAngle = ((phaseAngle % 360) + 360) % 360;
-
-  // Illumination from 0 (new) to 1 (full)
-  const illumination = (1 - Math.cos(rad * phaseAngle)) / 2;
-  moonIllumination.value = illumination;
-
-  // Waxing if angle <= 180
-  const waxing = phaseAngle <= 180;
-
-  let phaseName = "";
-  if (illumination < 0.03) phaseName = "New Moon";
-  else if (illumination < 0.25)
-    phaseName = waxing ? "Waxing Crescent" : "Waning Crescent";
-  else if (illumination < 0.55)
-    phaseName = waxing ? "First Quarter" : "Last Quarter";
-  else if (illumination < 0.97)
-    phaseName = waxing ? "Waxing Gibbous" : "Waning Gibbous";
-  else phaseName = "Full Moon";
+  // Determine phase name
+  let phaseName;
+  if (daysSinceNewMoon < 1) {
+    phaseName = "New Moon";
+    moonIllumination.value = 0;
+  } else if (daysSinceNewMoon < 7.38) {
+    phaseName = "Waxing Crescent";
+  } else if (daysSinceNewMoon < 7.38 + 0.5) {
+    phaseName = "First Quarter";
+    moonIllumination.value = 0.5;
+  } else if (daysSinceNewMoon < 14.77) {
+    phaseName = "Waxing Gibbous";
+  } else if (daysSinceNewMoon < 14.77 + 0.5) {
+    phaseName = "Full Moon";
+    moonIllumination.value = 1;
+  } else if (daysSinceNewMoon < 22.15) {
+    phaseName = "Waning Gibbous";
+  } else if (daysSinceNewMoon < 22.15 + 0.5) {
+    phaseName = "Last Quarter";
+    moonIllumination.value = 0.5;
+  } else {
+    phaseName = "Waning Crescent";
+  }
 
   return phaseName;
 };
@@ -249,7 +223,7 @@ const moonBeforeStyle = computed(() => {
     // New Moon - completely dark
     return {
       opacity: 1,
-      background: "#000",
+      background: "#04162E",
       boxShadow: "inset 0px 0 7px 0px #B5BCC6",
       borderRadius: "50%",
       transform: "rotate(0deg)",
@@ -259,7 +233,7 @@ const moonBeforeStyle = computed(() => {
     return {
       opacity: 0,
       background: "#B5BCC6",
-      boxShadow: "inset 0 0 7px 0px #000",
+      boxShadow: "inset 0 0 7px 0px #04162E",
       borderRadius: "50%",
       transform: "rotate(180deg)",
     };
@@ -270,9 +244,9 @@ const moonBeforeStyle = computed(() => {
     const shadowPosition = illumination * 110;
     return {
       opacity: 1,
-      background: illumination < 0.5 ? "#000" : "#B5BCC6",
+      background: illumination < 0.5 ? "#04162E" : "#B5BCC6",
       boxShadow: `inset ${shadowPosition}px 0 7px 0px ${
-        illumination < 0.5 ? "#B5BCC6" : "#000"
+        illumination < 0.5 ? "#B5BCC6" : "#04162E"
       }`,
       borderRadius: illumination === 0.5 ? "0" : "50%",
       transform: illumination < 0.5 ? "rotate(0deg)" : "rotate(180deg)",
@@ -282,9 +256,9 @@ const moonBeforeStyle = computed(() => {
     const shadowPosition = illumination * 110;
     return {
       opacity: 1,
-      background: illumination > 0.5 ? "#000" : "#B5BCC6",
+      background: illumination > 0.5 ? "#04162E" : "#B5BCC6",
       boxShadow: `inset ${-shadowPosition}px 0 7px 0px ${
-        illumination > 0.5 ? "#B5BCC6" : "#000"
+        illumination > 0.5 ? "#B5BCC6" : "#04162E"
       }`,
       borderRadius: illumination === 0.5 ? "0" : "50%",
       transform: illumination > 0.5 ? "rotate(0deg)" : "rotate(180deg)",
@@ -303,7 +277,7 @@ const moonAfterStyle = computed(() => {
     return {
       opacity: 0,
       background: "#B5BCC6",
-      boxShadow: "inset 0px 0 7px 0px #000",
+      boxShadow: "inset 0px 0 7px 0px #04162E",
       borderRadius: "50%",
       transform: "rotate(0deg)",
     };
@@ -323,7 +297,7 @@ const moonAfterStyle = computed(() => {
     return {
       opacity: 0,
       background: "#B5BCC6",
-      boxShadow: "inset 0px 0 7px 0px #000",
+      boxShadow: "inset 0px 0 7px 0px #04162E",
       borderRadius: "50%",
       transform: "rotate(0deg)",
     };
@@ -332,9 +306,9 @@ const moonAfterStyle = computed(() => {
     const shadowPosition = (1 - illumination) * 110;
     return {
       opacity: 1,
-      background: illumination > 0.5 ? "#B5BCC6" : "#000",
+      background: illumination > 0.5 ? "#B5BCC6" : "#04162E",
       boxShadow: `inset ${shadowPosition}px 0 7px 0px ${
-        illumination > 0.5 ? "#000" : "#B5BCC6"
+        illumination > 0.5 ? "#04162E" : "#B5BCC6"
       }`,
       borderRadius: illumination === 0.5 ? "0" : "50%",
       transform: illumination > 0.5 ? "rotate(0deg)" : "rotate(180deg)",
@@ -504,7 +478,7 @@ onMounted(() => {
   setInterval(() => {
     moonPhaseName.value = calculateMoonPhase();
     moonPhaseClass.value = moonPhaseName.value.toLowerCase().replace(" ", "-");
-  }, 3600000);
+  }, 30000);
 });
 
 // Adjust element density on resize
@@ -975,7 +949,7 @@ onMounted(() => {
 }
 
 .moon-before {
-  background: #000000;
+  background: #04162e;
   box-shadow: inset -10px 0 7px 0px #b5bcc6;
 }
 

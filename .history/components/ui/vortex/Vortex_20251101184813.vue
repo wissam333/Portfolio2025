@@ -54,7 +54,7 @@ interface VortexProps {
 }
 
 const props = withDefaults(defineProps<VortexProps>(), {
-  particleCount: 100, 
+  particleCount: 50, // Balanced count for performance vs visual
   rangeY: 300,
   baseSpeed: 0.0,
   rangeSpeed: 1.5,

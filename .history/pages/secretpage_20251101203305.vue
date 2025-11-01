@@ -147,11 +147,11 @@
     </div>
 
     <!-- Debug Controls -->
-    <!-- <div class="debug-controls">
+    <div class="debug-controls">
       <button @click="cycleSeason">Cycle Season</button>
       <button @click="cycleMoonPhase">Cycle Moon</button>
       <span>Current: {{ currentSeason }} - {{ moonPhaseName }}</span>
-    </div> -->
+    </div>
   </div>
 </template>
 <script setup>
@@ -249,7 +249,7 @@ const moonBeforeStyle = computed(() => {
     // New Moon - completely dark
     return {
       opacity: 1,
-      background: "#000",
+      background: "#04162E",
       boxShadow: "inset 0px 0 7px 0px #B5BCC6",
       borderRadius: "50%",
       transform: "rotate(0deg)",
@@ -259,7 +259,7 @@ const moonBeforeStyle = computed(() => {
     return {
       opacity: 0,
       background: "#B5BCC6",
-      boxShadow: "inset 0 0 7px 0px #000",
+      boxShadow: "inset 0 0 7px 0px #04162E",
       borderRadius: "50%",
       transform: "rotate(180deg)",
     };
@@ -270,9 +270,9 @@ const moonBeforeStyle = computed(() => {
     const shadowPosition = illumination * 110;
     return {
       opacity: 1,
-      background: illumination < 0.5 ? "#000" : "#B5BCC6",
+      background: illumination < 0.5 ? "#04162E" : "#B5BCC6",
       boxShadow: `inset ${shadowPosition}px 0 7px 0px ${
-        illumination < 0.5 ? "#B5BCC6" : "#000"
+        illumination < 0.5 ? "#B5BCC6" : "#04162E"
       }`,
       borderRadius: illumination === 0.5 ? "0" : "50%",
       transform: illumination < 0.5 ? "rotate(0deg)" : "rotate(180deg)",
@@ -282,9 +282,9 @@ const moonBeforeStyle = computed(() => {
     const shadowPosition = illumination * 110;
     return {
       opacity: 1,
-      background: illumination > 0.5 ? "#000" : "#B5BCC6",
+      background: illumination > 0.5 ? "#04162E" : "#B5BCC6",
       boxShadow: `inset ${-shadowPosition}px 0 7px 0px ${
-        illumination > 0.5 ? "#B5BCC6" : "#000"
+        illumination > 0.5 ? "#B5BCC6" : "#04162E"
       }`,
       borderRadius: illumination === 0.5 ? "0" : "50%",
       transform: illumination > 0.5 ? "rotate(0deg)" : "rotate(180deg)",
@@ -303,7 +303,7 @@ const moonAfterStyle = computed(() => {
     return {
       opacity: 0,
       background: "#B5BCC6",
-      boxShadow: "inset 0px 0 7px 0px #000",
+      boxShadow: "inset 0px 0 7px 0px #04162E",
       borderRadius: "50%",
       transform: "rotate(0deg)",
     };
@@ -323,7 +323,7 @@ const moonAfterStyle = computed(() => {
     return {
       opacity: 0,
       background: "#B5BCC6",
-      boxShadow: "inset 0px 0 7px 0px #000",
+      boxShadow: "inset 0px 0 7px 0px #04162E",
       borderRadius: "50%",
       transform: "rotate(0deg)",
     };
@@ -332,9 +332,9 @@ const moonAfterStyle = computed(() => {
     const shadowPosition = (1 - illumination) * 110;
     return {
       opacity: 1,
-      background: illumination > 0.5 ? "#B5BCC6" : "#000",
+      background: illumination > 0.5 ? "#B5BCC6" : "#04162E",
       boxShadow: `inset ${shadowPosition}px 0 7px 0px ${
-        illumination > 0.5 ? "#000" : "#B5BCC6"
+        illumination > 0.5 ? "#04162E" : "#B5BCC6"
       }`,
       borderRadius: illumination === 0.5 ? "0" : "50%",
       transform: illumination > 0.5 ? "rotate(0deg)" : "rotate(180deg)",
@@ -980,7 +980,7 @@ onMounted(() => {
 }
 
 .moon-after {
-  background: #b5bcc6;
+  background: #000000;
   box-shadow: inset -10px 0 7px 0px #b5bcc6;
 }
 

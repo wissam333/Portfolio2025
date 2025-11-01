@@ -147,11 +147,11 @@
     </div>
 
     <!-- Debug Controls -->
-    <!-- <div class="debug-controls">
+    <div class="debug-controls">
       <button @click="cycleSeason">Cycle Season</button>
       <button @click="cycleMoonPhase">Cycle Moon</button>
       <span>Current: {{ currentSeason }} - {{ moonPhaseName }}</span>
-    </div> -->
+    </div>
   </div>
 </template>
 <script setup>
@@ -209,11 +209,11 @@ const calculateMoonPhase = () => {
     180 -
     D -
     6.289 * Math.sin(rad * Mprime) +
-    2.100 * Math.sin(rad * M) -
+    2.1 * Math.sin(rad * M) -
     1.274 * Math.sin(rad * (2 * D - Mprime)) -
     0.658 * Math.sin(rad * (2 * D)) -
     0.214 * Math.sin(rad * (2 * Mprime)) -
-    0.110 * Math.sin(rad * D);
+    0.11 * Math.sin(rad * D);
 
   // Normalize
   phaseAngle = ((phaseAngle % 360) + 360) % 360;
@@ -249,7 +249,7 @@ const moonBeforeStyle = computed(() => {
     // New Moon - completely dark
     return {
       opacity: 1,
-      background: "#000",
+      background: "#04162E",
       boxShadow: "inset 0px 0 7px 0px #B5BCC6",
       borderRadius: "50%",
       transform: "rotate(0deg)",
@@ -259,7 +259,7 @@ const moonBeforeStyle = computed(() => {
     return {
       opacity: 0,
       background: "#B5BCC6",
-      boxShadow: "inset 0 0 7px 0px #000",
+      boxShadow: "inset 0 0 7px 0px #04162E",
       borderRadius: "50%",
       transform: "rotate(180deg)",
     };
@@ -267,24 +267,24 @@ const moonBeforeStyle = computed(() => {
 
   if (isWaxing) {
     // Waxing phases (shadow on left)
-    const shadowPosition = illumination * 110;
+    const shadowPosition = (0.5 - illumination) * 220;
     return {
       opacity: 1,
-      background: illumination < 0.5 ? "#000" : "#B5BCC6",
+      background: illumination < 0.5 ? "#04162E" : "#B5BCC6",
       boxShadow: `inset ${shadowPosition}px 0 7px 0px ${
-        illumination < 0.5 ? "#B5BCC6" : "#000"
+        illumination < 0.5 ? "#B5BCC6" : "#04162E"
       }`,
       borderRadius: illumination === 0.5 ? "0" : "50%",
       transform: illumination < 0.5 ? "rotate(0deg)" : "rotate(180deg)",
     };
   } else {
     // Waning phases (shadow on right)
-    const shadowPosition = illumination * 110;
+    const shadowPosition = (0.5 - illumination) * 220;
     return {
       opacity: 1,
-      background: illumination > 0.5 ? "#000" : "#B5BCC6",
+      background: illumination > 0.5 ? "#04162E" : "#B5BCC6",
       boxShadow: `inset ${-shadowPosition}px 0 7px 0px ${
-        illumination > 0.5 ? "#B5BCC6" : "#000"
+        illumination > 0.5 ? "#B5BCC6" : "#04162E"
       }`,
       borderRadius: illumination === 0.5 ? "0" : "50%",
       transform: illumination > 0.5 ? "rotate(0deg)" : "rotate(180deg)",
@@ -303,7 +303,7 @@ const moonAfterStyle = computed(() => {
     return {
       opacity: 0,
       background: "#B5BCC6",
-      boxShadow: "inset 0px 0 7px 0px #000",
+      boxShadow: "inset 0px 0 7px 0px #04162E",
       borderRadius: "50%",
       transform: "rotate(0deg)",
     };
@@ -323,18 +323,18 @@ const moonAfterStyle = computed(() => {
     return {
       opacity: 0,
       background: "#B5BCC6",
-      boxShadow: "inset 0px 0 7px 0px #000",
+      boxShadow: "inset 0px 0 7px 0px #04162E",
       borderRadius: "50%",
       transform: "rotate(0deg)",
     };
   } else {
     // Waning phases
-    const shadowPosition = (1 - illumination) * 110;
+    const shadowPosition = (0.5 - illumination) * 220;
     return {
       opacity: 1,
-      background: illumination > 0.5 ? "#B5BCC6" : "#000",
+      background: illumination > 0.5 ? "#B5BCC6" : "#04162E",
       boxShadow: `inset ${shadowPosition}px 0 7px 0px ${
-        illumination > 0.5 ? "#000" : "#B5BCC6"
+        illumination > 0.5 ? "#04162E" : "#B5BCC6"
       }`,
       borderRadius: illumination === 0.5 ? "0" : "50%",
       transform: illumination > 0.5 ? "rotate(0deg)" : "rotate(180deg)",
@@ -975,7 +975,7 @@ onMounted(() => {
 }
 
 .moon-before {
-  background: #000000;
+  background: #04162e;
   box-shadow: inset -10px 0 7px 0px #b5bcc6;
 }
 

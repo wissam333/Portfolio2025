@@ -147,11 +147,11 @@
     </div>
 
     <!-- Debug Controls -->
-    <!-- <div class="debug-controls">
+    <div class="debug-controls">
       <button @click="cycleSeason">Cycle Season</button>
       <button @click="cycleMoonPhase">Cycle Moon</button>
       <span>Current: {{ currentSeason }} - {{ moonPhaseName }}</span>
-    </div> -->
+    </div>
   </div>
 </template>
 <script setup>
@@ -249,8 +249,8 @@ const moonBeforeStyle = computed(() => {
     // New Moon - completely dark
     return {
       opacity: 1,
-      background: "#000",
-      boxShadow: "inset 0px 0 7px 0px #B5BCC6",
+      background: "#04162E",
+      boxShadow: "inset 0px 0 7px 0px #0000",
       borderRadius: "50%",
       transform: "rotate(0deg)",
     };
@@ -258,8 +258,8 @@ const moonBeforeStyle = computed(() => {
     // Full Moon - completely lit
     return {
       opacity: 0,
-      background: "#B5BCC6",
-      boxShadow: "inset 0 0 7px 0px #000",
+      background: "#0000",
+      boxShadow: "inset 0 0 7px 0px #04162E",
       borderRadius: "50%",
       transform: "rotate(180deg)",
     };
@@ -270,9 +270,9 @@ const moonBeforeStyle = computed(() => {
     const shadowPosition = illumination * 110;
     return {
       opacity: 1,
-      background: illumination < 0.5 ? "#000" : "#B5BCC6",
+      background: illumination < 0.5 ? "#04162E" : "#0000",
       boxShadow: `inset ${shadowPosition}px 0 7px 0px ${
-        illumination < 0.5 ? "#B5BCC6" : "#000"
+        illumination < 0.5 ? "#0000" : "#04162E"
       }`,
       borderRadius: illumination === 0.5 ? "0" : "50%",
       transform: illumination < 0.5 ? "rotate(0deg)" : "rotate(180deg)",
@@ -282,9 +282,9 @@ const moonBeforeStyle = computed(() => {
     const shadowPosition = illumination * 110;
     return {
       opacity: 1,
-      background: illumination > 0.5 ? "#000" : "#B5BCC6",
+      background: illumination > 0.5 ? "#04162E" : "#0000",
       boxShadow: `inset ${-shadowPosition}px 0 7px 0px ${
-        illumination > 0.5 ? "#B5BCC6" : "#000"
+        illumination > 0.5 ? "#0000" : "#04162E"
       }`,
       borderRadius: illumination === 0.5 ? "0" : "50%",
       transform: illumination > 0.5 ? "rotate(0deg)" : "rotate(180deg)",
@@ -302,8 +302,8 @@ const moonAfterStyle = computed(() => {
     // New Moon
     return {
       opacity: 0,
-      background: "#B5BCC6",
-      boxShadow: "inset 0px 0 7px 0px #000",
+      background: "#0000",
+      boxShadow: "inset 0px 0 7px 0px #04162E",
       borderRadius: "50%",
       transform: "rotate(0deg)",
     };
@@ -311,8 +311,8 @@ const moonAfterStyle = computed(() => {
     // Full Moon
     return {
       opacity: 1,
-      background: "#B5BCC6",
-      boxShadow: "inset 0 0 7px 0px #B5BCC6",
+      background: "#0000",
+      boxShadow: "inset 0 0 7px 0px #0000",
       borderRadius: "50%",
       transform: "rotate(0deg)",
     };
@@ -322,8 +322,8 @@ const moonAfterStyle = computed(() => {
     // Waxing phases
     return {
       opacity: 0,
-      background: "#B5BCC6",
-      boxShadow: "inset 0px 0 7px 0px #000",
+      background: "#0000",
+      boxShadow: "inset 0px 0 7px 0px #04162E",
       borderRadius: "50%",
       transform: "rotate(0deg)",
     };
@@ -332,9 +332,9 @@ const moonAfterStyle = computed(() => {
     const shadowPosition = (1 - illumination) * 110;
     return {
       opacity: 1,
-      background: illumination > 0.5 ? "#B5BCC6" : "#000",
+      background: illumination > 0.5 ? "#0000" : "#04162E",
       boxShadow: `inset ${shadowPosition}px 0 7px 0px ${
-        illumination > 0.5 ? "#000" : "#B5BCC6"
+        illumination > 0.5 ? "#04162E" : "#0000"
       }`,
       borderRadius: illumination === 0.5 ? "0" : "50%",
       transform: illumination > 0.5 ? "rotate(0deg)" : "rotate(180deg)",
@@ -955,7 +955,7 @@ onMounted(() => {
   position: absolute;
   clip-path: circle(40px at center);
   border-radius: 50%;
-  background: #b5bcc6;
+  background: #0000;
   overflow: hidden;
   cursor: pointer;
   transition: all 3s ease;
@@ -976,12 +976,12 @@ onMounted(() => {
 
 .moon-before {
   background: #000000;
-  box-shadow: inset -10px 0 7px 0px #b5bcc6;
+  box-shadow: inset -10px 0 7px 0px #0000;
 }
 
 .moon-after {
-  background: #b5bcc6;
-  box-shadow: inset -10px 0 7px 0px #b5bcc6;
+  background: #0000;
+  box-shadow: inset -10px 0 7px 0px #0000;
 }
 
 /* Rest of your existing CSS styles remain the same */
