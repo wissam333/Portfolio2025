@@ -931,16 +931,11 @@ onMounted(() => {
   position: absolute;
   clip-path: circle(40px at center);
   border-radius: 50%;
-  background: #b5bcc6;
+  background: #fff !important;
   overflow: hidden;
   cursor: pointer;
   transition: all 3s ease;
   z-index: 10;
-
-  background-image: url("/moon.png");
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain;
 }
 
 .moon-before,
@@ -953,7 +948,6 @@ onMounted(() => {
   height: 108%;
   width: 108%;
   transition: all 3s ease;
-  mix-blend-mode: darken;
 }
 
 .moon-before {

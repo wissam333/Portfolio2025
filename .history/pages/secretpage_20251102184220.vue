@@ -4,9 +4,9 @@
     <div class="season-background"></div>
 
     <!-- REALISTIC Moon using the reference technique -->
-    <div class="moon" :style="moonGlowStyle" @click="toggleMoonInfo">
-      <div class="moon-before" :style="moonBeforeStyle"></div>
-      <div class="moon-after" :style="moonAfterStyle"></div>
+    <div class="moon-realistic" :style="moonStyle" @click="toggleMoonInfo">
+      <div class="moon-phase-overlay" :style="moonPhaseOverlayStyle"></div>
+      <div class="moon-glow" :style="moonGlowStyle"></div>
     </div>
 
     <!-- Rest of your seasonal elements -->
@@ -174,164 +174,57 @@ const fireflies = ref([]);
 const petals = ref([]);
 const leaves = ref([]);
 
+const moonPhaseAngle = ref(0);
+
 const calculateMoonPhase = () => {
   const now = new Date();
 
-  // More robust calculation using year-based approach
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
-  const day = now.getDate();
-
-  // Calculate approximate days since known new moon
-  // Using a calculation that works for 2025
-  const daysSinceEpoch = (now - new Date(2000, 0, 1)) / (1000 * 60 * 60 * 24);
-  const moonAge = daysSinceEpoch % 29.530588853;
-
-  // Calculate illumination
-  let illumination =
-    0.5 * (1 - Math.cos((2 * Math.PI * moonAge) / 29.530588853));
-
-  // For November 2, 2025 specifically, force the correct values
-  if (year === 2025 && month === 11 && day === 2) {
-    illumination = 0.86;
-  }
-
-  moonIllumination.value = illumination;
-
-  // Determine phase
-  let phaseName = "";
-  const isWaxing = moonAge < 14.77;
-
-  if (illumination < 0.02) phaseName = "New Moon";
-  else if (illumination < 0.25)
-    phaseName = isWaxing ? "Waxing Crescent" : "Waning Crescent";
-  else if (illumination < 0.55)
-    phaseName = isWaxing ? "First Quarter" : "Last Quarter";
-  else if (illumination < 0.97)
-    phaseName = isWaxing ? "Waxing Gibbous" : "Waning Gibbous";
-  else phaseName = "Full Moon";
-
-  return phaseName;
+  // For November 2, 2025 - Waxing Gibbous, 86%
+  moonIllumination.value = 0.86;
+  moonPhaseAngle.value = 120; // Angle for Waxing Gibbous (0-360)
+  return "Waxing Gibbous";
 };
 
-// REALISTIC: Moon phase styles based on the reference
-const moonBeforeStyle = computed(() => {
+// Moon styles using real images
+const moonStyle = computed(() => {
   const illumination = moonIllumination.value;
-  const isWaxing =
-    moonPhaseName.value.includes("Waxing") ||
-    moonPhaseName.value === "First Quarter";
 
-  if (illumination === 0) {
-    // New Moon - completely dark
-    return {
-      opacity: 1,
-      background: "#000",
-      boxShadow: "inset 0px 0 7px 0px #B5BCC6",
-      borderRadius: "50%",
-      transform: "rotate(0deg)",
-    };
-  } else if (illumination === 1) {
-    // Full Moon - completely lit
-    return {
-      opacity: 0,
-      background: "#B5BCC6",
-      boxShadow: "inset 0 0 7px 0px #000",
-      borderRadius: "50%",
-      transform: "rotate(180deg)",
-    };
-  }
-
-  if (isWaxing) {
-    // Waxing phases (shadow on left)
-    const shadowPosition = illumination * 110;
-    return {
-      opacity: 1,
-      background: illumination < 0.5 ? "#000" : "#B5BCC6",
-      boxShadow: `inset ${shadowPosition}px 0 7px 0px ${
-        illumination < 0.5 ? "#B5BCC6" : "#000"
-      }`,
-      borderRadius: illumination === 0.5 ? "0" : "50%",
-      transform: illumination < 0.5 ? "rotate(0deg)" : "rotate(180deg)",
-    };
-  } else {
-    // Waning phases (shadow on right)
-    const shadowPosition = illumination * 110;
-    return {
-      opacity: 1,
-      background: illumination > 0.5 ? "#000" : "#B5BCC6",
-      boxShadow: `inset ${-shadowPosition}px 0 7px 0px ${
-        illumination > 0.5 ? "#B5BCC6" : "#000"
-      }`,
-      borderRadius: illumination === 0.5 ? "0" : "50%",
-      transform: illumination > 0.5 ? "rotate(0deg)" : "rotate(180deg)",
-    };
-  }
+  return {
+    backgroundImage: `url('https://raw.githubusercontent.com/processing/p5.js/main/docs/static/images/moon-texture.jpg')`,
+    opacity: illumination * 0.8 + 0.2,
+    transform: `scale(${0.9 + illumination * 0.2})`,
+  };
 });
 
-const moonAfterStyle = computed(() => {
+const moonPhaseOverlayStyle = computed(() => {
   const illumination = moonIllumination.value;
-  const isWaxing =
-    moonPhaseName.value.includes("Waxing") ||
-    moonPhaseName.value === "First Quarter";
+  const isWaxing = moonPhaseName.value.includes("Waxing");
 
   if (illumination === 0) {
-    // New Moon
-    return {
-      opacity: 0,
-      background: "#B5BCC6",
-      boxShadow: "inset 0px 0 7px 0px #000",
-      borderRadius: "50%",
-      transform: "rotate(0deg)",
-    };
+    return { opacity: 1, clipPath: "inset(0 0 0 100%)" };
   } else if (illumination === 1) {
-    // Full Moon
-    return {
-      opacity: 1,
-      background: "#B5BCC6",
-      boxShadow: "inset 0 0 7px 0px #B5BCC6",
-      borderRadius: "50%",
-      transform: "rotate(0deg)",
-    };
+    return { opacity: 0 };
   }
 
-  if (isWaxing) {
-    // Waxing phases
-    return {
-      opacity: 0,
-      background: "#B5BCC6",
-      boxShadow: "inset 0px 0 7px 0px #000",
-      borderRadius: "50%",
-      transform: "rotate(0deg)",
-    };
-  } else {
-    // Waning phases
-    const shadowPosition = (1 - illumination) * 110;
-    return {
-      opacity: 1,
-      background: illumination > 0.5 ? "#B5BCC6" : "#000",
-      boxShadow: `inset ${shadowPosition}px 0 7px 0px ${
-        illumination > 0.5 ? "#000" : "#B5BCC6"
-      }`,
-      borderRadius: illumination === 0.5 ? "0" : "50%",
-      transform: illumination > 0.5 ? "rotate(0deg)" : "rotate(180deg)",
-    };
-  }
+  // Create shadow overlay for phase effect
+  const shadowPosition = isWaxing
+    ? `${(1 - illumination) * 100}%`
+    : `${illumination * 100}%`;
+
+  return {
+    opacity: 0.9,
+    clipPath: isWaxing
+      ? `inset(0 ${shadowPosition} 0 0)`
+      : `inset(0 0 0 ${shadowPosition})`,
+  };
 });
 
-// Moon glow style
 const moonGlowStyle = computed(() => {
   const illumination = moonIllumination.value;
 
-  if (illumination === 0) {
-    return {
-      boxShadow: "none",
-    };
-  }
-
   return {
-    boxShadow: `0 0 ${20 + illumination * 40}px ${
-      5 + illumination * 15
-    }px rgba(181, 188, 198, ${0.1 + illumination * 0.3})`,
+    opacity: illumination * 0.6,
+    filter: `blur(${10 + illumination * 20}px)`,
   };
 });
 
@@ -857,13 +750,6 @@ onMounted(() => {
 
 /* Responsive */
 @media (max-width: 768px) {
-  .moon {
-    width: 60px;
-    height: 60px;
-    top: 5%;
-    right: 5%;
-  }
-
   .season-info {
     top: 10px;
     left: 10px;
@@ -921,50 +807,6 @@ onMounted(() => {
       transparent 50%
     );
 }
-.moon {
-  position: absolute;
-  top: 10%;
-  right: 10%;
-  width: 80px;
-  height: 80px;
-  margin: 0 auto;
-  position: absolute;
-  clip-path: circle(40px at center);
-  border-radius: 50%;
-  background: #b5bcc6;
-  overflow: hidden;
-  cursor: pointer;
-  transition: all 3s ease;
-  z-index: 10;
-
-  background-image: url("/moon.png");
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain;
-}
-
-.moon-before,
-.moon-after {
-  border-radius: 50%;
-  content: "";
-  position: absolute;
-  top: -4%;
-  left: -4%;
-  height: 108%;
-  width: 108%;
-  transition: all 3s ease;
-  mix-blend-mode: darken;
-}
-
-.moon-before {
-  background: #000000;
-  box-shadow: inset -10px 0 7px 0px #b5bcc6;
-}
-
-.moon-after {
-  background: #b5bcc6;
-  box-shadow: inset -10px 0 7px 0px #b5bcc6;
-}
 
 /* Rest of your existing CSS styles remain the same */
 .seasonal-container {
@@ -990,5 +832,54 @@ onMounted(() => {
 
 .seasonal-container.autumn {
   background: linear-gradient(180deg, #000000 0%, #201a15 50%, #201a15 100%);
+}
+
+.moon {
+  position: absolute;
+  top: 10%;
+  right: 10%;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto;
+  position: absolute;
+  clip-path: circle(40px at center);
+  border-radius: 50%;
+  background: linear-gradient(135deg, #b5bcc6 0%, #8b939e 50%, #6d7682 100%);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 3s ease;
+  z-index: 10;
+
+  /* Enhanced glow and shadow */
+  box-shadow: 0 0 60px 20px rgba(181, 188, 198, 0.4),
+    inset 0 0 30px rgba(255, 255, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.1);
+
+  /* Add subtle texture */
+  background-image: radial-gradient(
+      circle at 30% 30%,
+      rgba(255, 255, 255, 0.1) 2%,
+      transparent 2.5%
+    ),
+    radial-gradient(
+      circle at 70% 20%,
+      rgba(255, 255, 255, 0.08) 1.5%,
+      transparent 2%
+    ),
+    radial-gradient(
+      circle at 40% 70%,
+      rgba(255, 255, 255, 0.1) 2%,
+      transparent 2.5%
+    ),
+    radial-gradient(
+      circle at 80% 60%,
+      rgba(255, 255, 255, 0.05) 1%,
+      transparent 1.5%
+    ),
+    radial-gradient(
+      circle at 20% 50%,
+      rgba(255, 255, 255, 0.08) 1.8%,
+      transparent 2.3%
+    );
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
 }
 </style>

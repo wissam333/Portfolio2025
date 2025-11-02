@@ -5,6 +5,7 @@
 
     <!-- REALISTIC Moon using the reference technique -->
     <div class="moon" :style="moonGlowStyle" @click="toggleMoonInfo">
+      <div class="moon-glow"></div>
       <div class="moon-before" :style="moonBeforeStyle"></div>
       <div class="moon-after" :style="moonAfterStyle"></div>
     </div>
@@ -325,13 +326,15 @@ const moonGlowStyle = computed(() => {
   if (illumination === 0) {
     return {
       boxShadow: "none",
+      filter: "brightness(0.3)",
     };
   }
 
   return {
-    boxShadow: `0 0 ${20 + illumination * 40}px ${
-      5 + illumination * 15
-    }px rgba(181, 188, 198, ${0.1 + illumination * 0.3})`,
+    boxShadow: `0 0 ${40 + illumination * 60}px ${
+      10 + illumination * 20
+    }px rgba(181, 188, 198, ${0.2 + illumination * 0.4})`,
+    filter: `brightness(${0.8 + illumination * 0.4})`,
   };
 });
 
@@ -857,13 +860,6 @@ onMounted(() => {
 
 /* Responsive */
 @media (max-width: 768px) {
-  .moon {
-    width: 60px;
-    height: 60px;
-    top: 5%;
-    right: 5%;
-  }
-
   .season-info {
     top: 10px;
     left: 10px;
@@ -921,50 +917,6 @@ onMounted(() => {
       transparent 50%
     );
 }
-.moon {
-  position: absolute;
-  top: 10%;
-  right: 10%;
-  width: 80px;
-  height: 80px;
-  margin: 0 auto;
-  position: absolute;
-  clip-path: circle(40px at center);
-  border-radius: 50%;
-  background: #b5bcc6;
-  overflow: hidden;
-  cursor: pointer;
-  transition: all 3s ease;
-  z-index: 10;
-
-  background-image: url("/moon.png");
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain;
-}
-
-.moon-before,
-.moon-after {
-  border-radius: 50%;
-  content: "";
-  position: absolute;
-  top: -4%;
-  left: -4%;
-  height: 108%;
-  width: 108%;
-  transition: all 3s ease;
-  mix-blend-mode: darken;
-}
-
-.moon-before {
-  background: #000000;
-  box-shadow: inset -10px 0 7px 0px #b5bcc6;
-}
-
-.moon-after {
-  background: #b5bcc6;
-  box-shadow: inset -10px 0 7px 0px #b5bcc6;
-}
 
 /* Rest of your existing CSS styles remain the same */
 .seasonal-container {
@@ -990,5 +942,206 @@ onMounted(() => {
 
 .seasonal-container.autumn {
   background: linear-gradient(180deg, #000000 0%, #201a15 50%, #201a15 100%);
+}
+
+.moon {
+  position: absolute;
+  top: 10%;
+  right: 10%;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto;
+  position: absolute;
+  clip-path: circle(40px at center);
+  border-radius: 50%;
+  background: linear-gradient(135deg, #b5bcc6 0%, #8b939e 50%, #6d7682 100%);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 3s ease;
+  z-index: 10;
+
+  /* Enhanced glow and shadow */
+  box-shadow: 0 0 60px 20px rgba(181, 188, 198, 0.4),
+    inset 0 0 30px rgba(255, 255, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.1);
+
+  /* Add subtle texture */
+  background-image: radial-gradient(
+      circle at 30% 30%,
+      rgba(255, 255, 255, 0.1) 2%,
+      transparent 2.5%
+    ),
+    radial-gradient(
+      circle at 70% 20%,
+      rgba(255, 255, 255, 0.08) 1.5%,
+      transparent 2%
+    ),
+    radial-gradient(
+      circle at 40% 70%,
+      rgba(255, 255, 255, 0.1) 2%,
+      transparent 2.5%
+    ),
+    radial-gradient(
+      circle at 80% 60%,
+      rgba(255, 255, 255, 0.05) 1%,
+      transparent 1.5%
+    ),
+    radial-gradient(
+      circle at 20% 50%,
+      rgba(255, 255, 255, 0.08) 1.8%,
+      transparent 2.3%
+    );
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+}
+
+.moon-before,
+.moon-after {
+  border-radius: 50%;
+  content: "";
+  position: absolute;
+  top: -4%;
+  left: -4%;
+  height: 108%;
+  width: 108%;
+  transition: all 3s ease;
+
+  /* Add crater textures to both layers */
+  background-image: radial-gradient(
+      circle at 25% 25%,
+      rgba(0, 0, 0, 0.3) 3%,
+      transparent 3.5%
+    ),
+    radial-gradient(circle at 65% 15%, rgba(0, 0, 0, 0.2) 2%, transparent 2.5%),
+    radial-gradient(circle at 45% 65%, rgba(0, 0, 0, 0.25) 2.5%, transparent 3%),
+    radial-gradient(circle at 75% 55%, rgba(0, 0, 0, 0.15) 1.5%, transparent 2%),
+    radial-gradient(
+      circle at 15% 45%,
+      rgba(0, 0, 0, 0.2) 2.2%,
+      transparent 2.7%
+    ),
+    radial-gradient(circle at 85% 35%, rgba(0, 0, 0, 0.1) 1%, transparent 1.5%),
+    radial-gradient(
+      circle at 35% 85%,
+      rgba(0, 0, 0, 0.2) 1.8%,
+      transparent 2.3%
+    );
+  background-size: 100% 100%;
+}
+
+.moon-before {
+  background: #000000;
+  box-shadow: inset -10px 0 7px 0px #b5bcc6,
+    inset 0 0 20px rgba(181, 188, 198, 0.2);
+  filter: blur(0.3px);
+}
+
+.moon-after {
+  background: #b5bcc6;
+  box-shadow: inset -10px 0 7px 0px #b5bcc6,
+    inset 0 0 15px rgba(255, 255, 255, 0.1);
+  filter: blur(0.2px);
+}
+
+/* Add additional crater overlay for more realism */
+.moon::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-image: radial-gradient(
+      circle at 60% 40%,
+      rgba(0, 0, 0, 0.4) 4%,
+      transparent 4.5%
+    ),
+    radial-gradient(circle at 30% 70%, rgba(0, 0, 0, 0.3) 3%, transparent 3.5%),
+    radial-gradient(circle at 70% 80%, rgba(0, 0, 0, 0.25) 2.5%, transparent 3%),
+    radial-gradient(circle at 20% 30%, rgba(0, 0, 0, 0.35) 3.5%, transparent 4%);
+  pointer-events: none;
+  z-index: 2;
+  mix-blend-mode: multiply;
+}
+
+/* Enhanced glow effect based on illumination */
+.moon-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120%;
+  height: 120%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    rgba(181, 188, 198, 0.1) 0%,
+    rgba(181, 188, 198, 0.05) 30%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: -1;
+  filter: blur(5px);
+}
+
+/* Hover effect */
+.moon:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 80px 25px rgba(181, 188, 198, 0.5),
+    inset 0 0 40px rgba(255, 255, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+/* Animation for subtle shimmer */
+@keyframes moonShimmer {
+  0%,
+  100% {
+    filter: brightness(1) contrast(1);
+  }
+  50% {
+    filter: brightness(1.02) contrast(1.05);
+  }
+}
+
+.moon {
+  animation: moonShimmer 8s ease-in-out infinite;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .moon {
+    width: 60px;
+    height: 60px;
+    top: 5%;
+    right: 5%;
+    clip-path: circle(30px at center);
+  }
+
+  .moon::before {
+    background-size: 90% 90%;
+  }
+}
+
+/* Different seasonal moon tones */
+.seasonal-container.winter .moon {
+  background: linear-gradient(135deg, #e8eaf0 0%, #b5bcc6 50%, #8b939e 100%);
+  box-shadow: 0 0 60px 20px rgba(232, 234, 240, 0.4),
+    inset 0 0 30px rgba(255, 255, 255, 0.15);
+}
+
+.seasonal-container.summer .moon {
+  background: linear-gradient(135deg, #f0f2f5 0%, #c8ced6 50%, #9fa6b0 100%);
+  box-shadow: 0 0 60px 20px rgba(240, 242, 245, 0.5),
+    inset 0 0 30px rgba(255, 255, 255, 0.2);
+}
+
+.seasonal-container.spring .moon {
+  background: linear-gradient(135deg, #f5f7fa 0%, #d5dbe2 50%, #a8b1bb 100%);
+  box-shadow: 0 0 60px 20px rgba(245, 247, 250, 0.45),
+    inset 0 0 30px rgba(255, 255, 255, 0.18);
+}
+
+.seasonal-container.autumn .moon {
+  background: linear-gradient(135deg, #e6e8eb 0%, #b8bec6 50%, #8c949e 100%);
+  box-shadow: 0 0 60px 20px rgba(230, 232, 235, 0.35),
+    inset 0 0 30px rgba(255, 255, 255, 0.12);
 }
 </style>

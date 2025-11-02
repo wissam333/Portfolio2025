@@ -962,7 +962,7 @@ onMounted(() => {
 }
 
 .moon-after {
-  background: #b5bcc6;
+  background: #fefefe;
   box-shadow: inset -10px 0 7px 0px #b5bcc6;
 }
 

@@ -5,8 +5,8 @@
 
     <!-- REALISTIC Moon using the reference technique -->
     <div class="moon" :style="moonGlowStyle" @click="toggleMoonInfo">
-      <div class="moon-before" :style="moonBeforeStyle"></div>
-      <div class="moon-after" :style="moonAfterStyle"></div>
+      <img src="/moon.png" alt="Moon" class="moon-image" />
+      <div class="moon-phase-overlay" :style="moonPhaseStyle"></div>
     </div>
 
     <!-- Rest of your seasonal elements -->
@@ -215,7 +215,8 @@ const calculateMoonPhase = () => {
 };
 
 // REALISTIC: Moon phase styles based on the reference
-const moonBeforeStyle = computed(() => {
+// Replace moonBeforeStyle and moonAfterStyle with this:
+const moonPhaseStyle = computed(() => {
   const illumination = moonIllumination.value;
   const isWaxing =
     moonPhaseName.value.includes("Waxing") ||
@@ -226,99 +227,38 @@ const moonBeforeStyle = computed(() => {
     return {
       opacity: 1,
       background: "#000",
-      boxShadow: "inset 0px 0 7px 0px #B5BCC6",
-      borderRadius: "50%",
-      transform: "rotate(0deg)",
+      clipPath: "inset(0 0 0 100%)",
     };
   } else if (illumination === 1) {
-    // Full Moon - completely lit
+    // Full Moon - completely visible
     return {
       opacity: 0,
-      background: "#B5BCC6",
-      boxShadow: "inset 0 0 7px 0px #000",
-      borderRadius: "50%",
-      transform: "rotate(180deg)",
+      background: "transparent",
+      clipPath: "inset(0 0 0 0)",
     };
   }
+
+  // Create shadow overlay for phase effect
+  const shadowWidth = (1 - illumination) * 100;
 
   if (isWaxing) {
     // Waxing phases (shadow on left)
-    const shadowPosition = illumination * 110;
     return {
-      opacity: 1,
-      background: illumination < 0.5 ? "#000" : "#B5BCC6",
-      boxShadow: `inset ${shadowPosition}px 0 7px 0px ${
-        illumination < 0.5 ? "#B5BCC6" : "#000"
-      }`,
-      borderRadius: illumination === 0.5 ? "0" : "50%",
-      transform: illumination < 0.5 ? "rotate(0deg)" : "rotate(180deg)",
+      opacity: 0.9,
+      background: "linear-gradient(to right, transparent 0%, #000 100%)",
+      clipPath: `inset(0 ${shadowWidth}% 0 0)`,
     };
   } else {
     // Waning phases (shadow on right)
-    const shadowPosition = illumination * 110;
     return {
-      opacity: 1,
-      background: illumination > 0.5 ? "#000" : "#B5BCC6",
-      boxShadow: `inset ${-shadowPosition}px 0 7px 0px ${
-        illumination > 0.5 ? "#B5BCC6" : "#000"
-      }`,
-      borderRadius: illumination === 0.5 ? "0" : "50%",
-      transform: illumination > 0.5 ? "rotate(0deg)" : "rotate(180deg)",
+      opacity: 0.9,
+      background: "linear-gradient(to left, transparent 0%, #000 100%)",
+      clipPath: `inset(0 0 0 ${shadowWidth}%)`,
     };
   }
 });
 
-const moonAfterStyle = computed(() => {
-  const illumination = moonIllumination.value;
-  const isWaxing =
-    moonPhaseName.value.includes("Waxing") ||
-    moonPhaseName.value === "First Quarter";
-
-  if (illumination === 0) {
-    // New Moon
-    return {
-      opacity: 0,
-      background: "#B5BCC6",
-      boxShadow: "inset 0px 0 7px 0px #000",
-      borderRadius: "50%",
-      transform: "rotate(0deg)",
-    };
-  } else if (illumination === 1) {
-    // Full Moon
-    return {
-      opacity: 1,
-      background: "#B5BCC6",
-      boxShadow: "inset 0 0 7px 0px #B5BCC6",
-      borderRadius: "50%",
-      transform: "rotate(0deg)",
-    };
-  }
-
-  if (isWaxing) {
-    // Waxing phases
-    return {
-      opacity: 0,
-      background: "#B5BCC6",
-      boxShadow: "inset 0px 0 7px 0px #000",
-      borderRadius: "50%",
-      transform: "rotate(0deg)",
-    };
-  } else {
-    // Waning phases
-    const shadowPosition = (1 - illumination) * 110;
-    return {
-      opacity: 1,
-      background: illumination > 0.5 ? "#B5BCC6" : "#000",
-      boxShadow: `inset ${shadowPosition}px 0 7px 0px ${
-        illumination > 0.5 ? "#000" : "#B5BCC6"
-      }`,
-      borderRadius: illumination === 0.5 ? "0" : "50%",
-      transform: illumination > 0.5 ? "rotate(0deg)" : "rotate(180deg)",
-    };
-  }
-});
-
-// Moon glow style
+// Keep your existing moonGlowStyle
 const moonGlowStyle = computed(() => {
   const illumination = moonIllumination.value;
 
@@ -921,74 +861,52 @@ onMounted(() => {
       transparent 50%
     );
 }
+
 .moon {
   position: absolute;
   top: 10%;
   right: 10%;
   width: 80px;
   height: 80px;
-  margin: 0 auto;
-  position: absolute;
-  clip-path: circle(40px at center);
   border-radius: 50%;
-  background: #b5bcc6;
   overflow: hidden;
   cursor: pointer;
   transition: all 3s ease;
   z-index: 10;
-
-  background-image: url("/moon.png");
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain;
 }
 
+.moon-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+.moon-phase-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  transition: all 3s ease;
+  pointer-events: none;
+}
+
+/* Remove these old styles */
 .moon-before,
 .moon-after {
-  border-radius: 50%;
-  content: "";
-  position: absolute;
-  top: -4%;
-  left: -4%;
-  height: 108%;
-  width: 108%;
-  transition: all 3s ease;
-  mix-blend-mode: darken;
+  display: none;
 }
 
-.moon-before {
-  background: #000000;
-  box-shadow: inset -10px 0 7px 0px #b5bcc6;
-}
-
-.moon-after {
-  background: #b5bcc6;
-  box-shadow: inset -10px 0 7px 0px #b5bcc6;
-}
-
-/* Rest of your existing CSS styles remain the same */
-.seasonal-container {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-  overflow: hidden;
-  transition: all 2s ease-in-out;
-}
-
-/* Seasonal Background Colors */
-.seasonal-container.winter {
-  background: linear-gradient(180deg, #000000 0%, #0e0a1f 50%, #0e0a1f 100%);
-}
-
-.seasonal-container.spring {
-  background: linear-gradient(180deg, #000000 0%, #121612 50%, #121612 100%);
-}
-
-.seasonal-container.summer {
-  background: linear-gradient(180deg, #000000 0%, #151519 50%, #151519 100%);
-}
-
-.seasonal-container.autumn {
-  background: linear-gradient(180deg, #000000 0%, #201a15 50%, #201a15 100%);
+/* Responsive */
+@media (max-width: 768px) {
+  .moon {
+    width: 60px;
+    height: 60px;
+    top: 5%;
+    right: 5%;
+  }
 }
 </style>

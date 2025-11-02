@@ -177,39 +177,37 @@ const leaves = ref([]);
 const calculateMoonPhase = () => {
   const now = new Date();
 
-  // More robust calculation using year-based approach
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
-  const day = now.getDate();
+  // More accurate moon phase calculation using simplified approach
+  const lunarCycle = 29.530588853; // days in lunar cycle
+  const knownNewMoon = new Date("2024-01-11"); // recent known new moon
 
-  // Calculate approximate days since known new moon
-  // Using a calculation that works for 2025
-  const daysSinceEpoch = (now - new Date(2000, 0, 1)) / (1000 * 60 * 60 * 24);
-  const moonAge = daysSinceEpoch % 29.530588853;
+  // Calculate days since last known new moon
+  const daysSinceNewMoon = (now - knownNewMoon) / (1000 * 60 * 60 * 24);
 
-  // Calculate illumination
-  let illumination =
-    0.5 * (1 - Math.cos((2 * Math.PI * moonAge) / 29.530588853));
+  // Calculate moon age in the current cycle (0 to lunarCycle)
+  const moonAge = daysSinceNewMoon % lunarCycle;
 
-  // For November 2, 2025 specifically, force the correct values
-  if (year === 2025 && month === 11 && day === 2) {
-    illumination = 0.86;
-  }
-
+  // Calculate illumination (0 to 1)
+  const illumination =
+    0.5 * (1 - Math.cos((2 * Math.PI * moonAge) / lunarCycle));
   moonIllumination.value = illumination;
 
-  // Determine phase
+  // Determine phase name based on moon age
   let phaseName = "";
-  const isWaxing = moonAge < 14.77;
+  const isWaxing = moonAge < lunarCycle / 2;
 
-  if (illumination < 0.02) phaseName = "New Moon";
-  else if (illumination < 0.25)
+  if (moonAge < 1) phaseName = "New Moon";
+  else if (moonAge < 7)
     phaseName = isWaxing ? "Waxing Crescent" : "Waning Crescent";
-  else if (illumination < 0.55)
-    phaseName = isWaxing ? "First Quarter" : "Last Quarter";
-  else if (illumination < 0.97)
+  else if (moonAge < 8) phaseName = isWaxing ? "First Quarter" : "Last Quarter";
+  else if (moonAge < 14)
     phaseName = isWaxing ? "Waxing Gibbous" : "Waning Gibbous";
-  else phaseName = "Full Moon";
+  else if (moonAge < 15) phaseName = "Full Moon";
+  else if (moonAge < 22)
+    phaseName = isWaxing ? "Waxing Gibbous" : "Waning Gibbous";
+  else if (moonAge < 23)
+    phaseName = isWaxing ? "First Quarter" : "Last Quarter";
+  else phaseName = isWaxing ? "Waxing Crescent" : "Waning Crescent";
 
   return phaseName;
 };
@@ -936,11 +934,6 @@ onMounted(() => {
   cursor: pointer;
   transition: all 3s ease;
   z-index: 10;
-
-  background-image: url("/moon.png");
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain;
 }
 
 .moon-before,
@@ -953,7 +946,6 @@ onMounted(() => {
   height: 108%;
   width: 108%;
   transition: all 3s ease;
-  mix-blend-mode: darken;
 }
 
 .moon-before {

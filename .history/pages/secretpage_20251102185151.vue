@@ -936,11 +936,6 @@ onMounted(() => {
   cursor: pointer;
   transition: all 3s ease;
   z-index: 10;
-
-  background-image: url("/moon.png");
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain;
 }
 
 .moon-before,
@@ -953,12 +948,12 @@ onMounted(() => {
   height: 108%;
   width: 108%;
   transition: all 3s ease;
-  mix-blend-mode: darken;
 }
 
 .moon-before {
   background: #000000;
   box-shadow: inset -10px 0 7px 0px #b5bcc6;
+  background-image: url("/moon.png");
 }
 
 .moon-after {

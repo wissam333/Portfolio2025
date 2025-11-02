@@ -953,7 +953,6 @@ onMounted(() => {
   height: 108%;
   width: 108%;
   transition: all 3s ease;
-  mix-blend-mode: darken;
 }
 
 .moon-before {

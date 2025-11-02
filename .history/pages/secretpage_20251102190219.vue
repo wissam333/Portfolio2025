@@ -962,8 +962,8 @@ onMounted(() => {
 }
 
 .moon-after {
-  background: #b5bcc6;
-  box-shadow: inset -10px 0 7px 0px #b5bcc6;
+  background: #fff;
+  box-shadow: inset -10px 0 7px 0px #fff;
 }
 
 /* Rest of your existing CSS styles remain the same */
