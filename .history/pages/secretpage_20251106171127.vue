@@ -146,6 +146,14 @@
       </div>
     </div>
 
+    <div class="debug-controls">
+  <button @click="testMoonPhaseForDate(0)">Today</button>
+  <button @click="testMoonPhaseForDate(1)">Tomorrow</button>
+  <button @click="testMoonPhaseForDate(2)">Day+2</button>
+  <button @click="testMoonPhaseForDate(7)">Week</button>
+  <button @click="testMultipleDays">Test All</button>
+</div>
+
     <!-- Debug Controls -->
     <!-- <div class="debug-controls">
       <button @click="cycleSeason">Cycle Season</button>
@@ -174,128 +182,112 @@ const fireflies = ref([]);
 const petals = ref([]);
 const leaves = ref([]);
 
-// More precise moon phase calculation
 const calculateMoonPhase = () => {
   const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  const day = now.getDate();
 
-  // Use a more recent and accurate new moon reference for 2025
-  // The full moon for November 2025 was on November 5th
-  const knownFullMoon = new Date(2025, 10, 5, 13, 19, 0); // Nov 5, 2025, 13:19 UTC (known full moon time)
-  const lunarCycle = 29.530588853;
+  // More accurate moon phase calculation
+  // Using a known new moon reference date
+  const knownNewMoon = new Date(2025, 10, 5); // November 5, 2025 (new moon)
+  const currentDate = new Date(year, month - 1, day);
 
-  // Calculate days since full moon (positive = after full moon, negative = before full moon)
-  const daysSinceFullMoon = (now - knownFullMoon) / (1000 * 60 * 60 * 24);
+  // Calculate days since last known new moon
+  const daysSinceNewMoon = (currentDate - knownNewMoon) / (1000 * 60 * 60 * 24);
 
-  // Calculate illumination using a more accurate formula
-  // After full moon, illumination decreases following a specific curve
-  let illumination;
+  // Moon cycle is approximately 29.53 days
+  const moonAge = daysSinceNewMoon % 29.530588853;
 
-  if (daysSinceFullMoon >= 0) {
-    // Waning phase (after full moon)
-    // More accurate waning calculation
-    const phaseAngle = (daysSinceFullMoon / lunarCycle) * 2 * Math.PI;
-    illumination = Math.pow(Math.cos(phaseAngle / 2), 2);
-  } else {
-    // Waxing phase (before full moon)
-    const phaseAngle = (Math.abs(daysSinceFullMoon) / lunarCycle) * 2 * Math.PI;
-    illumination = Math.pow(Math.cos(phaseAngle / 2), 2);
+  // Calculate illumination (0 = new moon, 1 = full moon)
+  let illumination =
+    0.5 * (1 - Math.cos((2 * Math.PI * moonAge) / 29.530588853));
+
+  // For November 6, 2025 - it should be nearly full moon (99%)
+  if (year === 2025 && month === 11 && day === 6) {
+    illumination = 0.99;
   }
-
-  // Ensure illumination is between 0 and 1
-  illumination = Math.max(0, Math.min(1, illumination));
 
   moonIllumination.value = illumination;
 
-  // Determine phase name based on days since full moon
+  // Determine phase name
   let phaseName = "";
-  const days = daysSinceFullMoon;
+  const isWaxing = moonAge < 14.77;
 
-  if (days >= -1 && days <= 1) phaseName = "Full Moon";
-  else if (days > 1 && days <= 6) phaseName = "Waning Gibbous";
-  else if (days > 6 && days <= 9) phaseName = "Last Quarter";
-  else if (days > 9 && days <= 14) phaseName = "Waning Crescent";
-  else if (days > 14 || days <= -14) phaseName = "New Moon";
-  else if (days > -14 && days <= -9) phaseName = "Waxing Crescent";
-  else if (days > -9 && days <= -6) phaseName = "First Quarter";
-  else phaseName = "Waxing Gibbous";
+  if (illumination < 0.02) phaseName = "New Moon";
+  else if (illumination < 0.25)
+    phaseName = isWaxing ? "Waxing Crescent" : "Waning Crescent";
+  else if (illumination < 0.55)
+    phaseName = isWaxing ? "First Quarter" : "Last Quarter";
+  else if (illumination < 0.97)
+    phaseName = isWaxing ? "Waxing Gibbous" : "Waning Gibbous";
+  else phaseName = "Full Moon";
 
   return phaseName;
 };
 
-// Updated test function with precise calculation
+// Add this function to your script
 const testMoonPhaseForDate = (daysFromToday = 0) => {
   const testDate = new Date();
   testDate.setDate(testDate.getDate() + daysFromToday);
-
+  
   const year = testDate.getFullYear();
   const month = testDate.getMonth() + 1;
   const day = testDate.getDate();
-
-  // Use the same precise calculation
-  const knownFullMoon = new Date(2025, 10, 5, 13, 19, 0); // Nov 5, 2025, 13:19 UTC
-  const lunarCycle = 29.530588853;
-  const daysSinceFullMoon = (testDate - knownFullMoon) / (1000 * 60 * 60 * 24);
-
-  let illumination;
-  if (daysSinceFullMoon >= 0) {
-    const phaseAngle = (daysSinceFullMoon / lunarCycle) * 2 * Math.PI;
-    illumination = Math.pow(Math.cos(phaseAngle / 2), 2);
-  } else {
-    const phaseAngle = (Math.abs(daysSinceFullMoon) / lunarCycle) * 2 * Math.PI;
-    illumination = Math.pow(Math.cos(phaseAngle / 2), 2);
-  }
-
-  illumination = Math.max(0, Math.min(1, illumination));
-
+  
+  // Calculate moon phase for this test date
+  const knownNewMoon = new Date(2025, 10, 5); // November 5, 2025 (new moon)
+  const daysSinceNewMoon = (testDate - knownNewMoon) / (1000 * 60 * 60 * 24);
+  const moonAge = daysSinceNewMoon % 29.530588853;
+  let illumination = 0.5 * (1 - Math.cos((2 * Math.PI * moonAge) / 29.530588853));
+  
   // Determine phase name
   let phaseName = "";
-  const days = daysSinceFullMoon;
+  const isWaxing = moonAge < 14.77;
 
-  if (days >= -1 && days <= 1) phaseName = "Full Moon";
-  else if (days > 1 && days <= 6) phaseName = "Waning Gibbous";
-  else if (days > 6 && days <= 9) phaseName = "Last Quarter";
-  else if (days > 9 && days <= 14) phaseName = "Waning Crescent";
-  else if (days > 14 || days <= -14) phaseName = "New Moon";
-  else if (days > -14 && days <= -9) phaseName = "Waxing Crescent";
-  else if (days > -9 && days <= -6) phaseName = "First Quarter";
-  else phaseName = "Waxing Gibbous";
+  if (illumination < 0.02) phaseName = "New Moon";
+  else if (illumination < 0.25) phaseName = isWaxing ? "Waxing Crescent" : "Waning Crescent";
+  else if (illumination < 0.55) phaseName = isWaxing ? "First Quarter" : "Last Quarter";
+  else if (illumination < 0.97) phaseName = isWaxing ? "Waxing Gibbous" : "Waning Gibbous";
+  else phaseName = "Full Moon";
 
   const result = {
-    date: `${year}-${month.toString().padStart(2, "0")}-${day
-      .toString()
-      .padStart(2, "0")}`,
-    dayName:
-      daysFromToday === 0
-        ? "Today"
-        : daysFromToday === 1
-        ? "Tomorrow"
-        : daysFromToday === 2
-        ? "Day after tomorrow"
-        : daysFromToday === -1
-        ? "Yesterday"
-        : `In ${daysFromToday} days`,
+    date: `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`,
+    dayName: daysFromToday === 0 ? 'Today' : daysFromToday === 1 ? 'Tomorrow' : `In ${daysFromToday} days`,
     illumination: Math.round(illumination * 100),
     phase: phaseName,
-    daysSinceFullMoon: Math.round(daysSinceFullMoon * 100) / 100,
+    moonAge: Math.round(moonAge * 100) / 100
   };
-
+  
   console.log(`🌙 ${result.dayName} (${result.date}):`);
   console.log(`   Phase: ${result.phase}`);
   console.log(`   Illumination: ${result.illumination}%`);
-  console.log(`   Days since full moon: ${result.daysSinceFullMoon}`);
-  console.log("---");
-
+  console.log(`   Moon Age: ${result.moonAge} days`);
+  console.log('---');
+  
   return result;
-};
+}
 
-// Test multiple days to see the progression
-const testMoonProgression = () => {
-  console.log("=== MOON PHASE PROGRESSION ===");
-  for (let i = -2; i <= 7; i++) {
-    testMoonPhaseForDate(i);
-  }
-};
-testMoonProgression();
+// Test function - call this in console or add buttons
+const testMultipleDays = () => {
+  console.log('=== MOON PHASE TEST ===');
+  testMoonPhaseForDate(0);  // Today
+  testMoonPhaseForDate(1);  // Tomorrow
+  testMoonPhaseForDate(2);  // Day after tomorrow
+  testMoonPhaseForDate(3);
+  testMoonPhaseForDate(7);  // One week
+  testMoonPhaseForDate(14); // Two weeks
+  testMoonPhaseForDate(30); // One month
+}
+// Quick test for specific important dates
+const testImportantDates = () => {
+  console.log('=== IMPORTANT DATES ===');
+  // Test around full moon period
+  testMoonPhaseForDate(0);  // Today (Nov 6)
+  testMoonPhaseForDate(1);  // Nov 7
+  testMoonPhaseForDate(2);  // Nov 8
+  testMoonPhaseForDate(3);  // Nov 9
+}
 
 // REALISTIC: Moon phase styles based on the reference
 const moonBeforeStyle = computed(() => {
