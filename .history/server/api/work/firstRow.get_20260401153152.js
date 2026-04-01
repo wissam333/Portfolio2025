@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
       type: "Marketing Agency",
       typeAr: "وكالة تسويق",
       urlField: "https://nerva-online.com/",
-      image: "/works/nerva.svg",
+      image: "/works/nerva.webp",
     },
     {
       id: 11,

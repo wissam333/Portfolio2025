@@ -1,15 +1,6 @@
 export default defineEventHandler(async (event) => {
   const firstRow = [
     {
-      id: 13,
-      name: "Nerva",
-      nameAr: "نيرفا",
-      type: "Marketing Agency",
-      typeAr: "وكالة تسويق",
-      urlField: "https://nerva-online.com/",
-      image: "/works/nerva.svg",
-    },
-    {
       id: 11,
       name: "Pan Africa",
       nameAr: "عموم أفريقيا",
