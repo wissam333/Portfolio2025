@@ -230,12 +230,14 @@ onMounted(() => {
   scheduleIntroAnimations();
 
   window.addEventListener("mousemove", updateCursor);
+  window.addEventListener("mousemove", checkGifHover);
   window.addEventListener("touchmove", updateCursor, { passive: true });
   window.addEventListener("scroll", handleScroll, { passive: true });
 });
 
 onUnmounted(() => {
   window.removeEventListener("mousemove", updateCursor);
+  window.removeEventListener("mousemove", checkGifHover);
   window.removeEventListener("touchmove", updateCursor);
   window.removeEventListener("scroll", handleScroll);
   if (glowTimeout) clearTimeout(glowTimeout);
