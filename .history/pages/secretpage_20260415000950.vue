@@ -24,6 +24,41 @@
       />
     </div>
 
+    <!-- Constellation lines (winter only) -->
+    <svg
+      v-if="currentSeason === 'winter'"
+      class="constellation-svg"
+      aria-hidden="true"
+      viewBox="0 0 100 100"
+      preserveAspectRatio="none"
+    >
+      <g class="constellation" opacity="0.18">
+        <line x1="20" y1="15" x2="30" y2="25" />
+        <line x1="30" y1="25" x2="45" y2="20" />
+        <line x1="45" y1="20" x2="55" y2="30" />
+        <line x1="55" y1="30" x2="70" y2="18" />
+        <line x1="70" y1="18" x2="80" y2="28" />
+        <circle cx="20" cy="15" r="0.5" />
+        <circle cx="30" cy="25" r="0.5" />
+        <circle cx="45" cy="20" r="0.5" />
+        <circle cx="55" cy="30" r="0.5" />
+        <circle cx="70" cy="18" r="0.5" />
+        <circle cx="80" cy="28" r="0.5" />
+      </g>
+      <g class="constellation" opacity="0.13">
+        <line x1="10" y1="45" x2="22" y2="38" />
+        <line x1="22" y1="38" x2="35" y2="48" />
+        <line x1="35" y1="48" x2="28" y2="58" />
+        <line x1="28" y1="58" x2="15" y2="55" />
+        <line x1="15" y1="55" x2="10" y2="45" />
+        <circle cx="10" cy="45" r="0.4" />
+        <circle cx="22" cy="38" r="0.4" />
+        <circle cx="35" cy="48" r="0.4" />
+        <circle cx="28" cy="58" r="0.4" />
+        <circle cx="15" cy="55" r="0.4" />
+      </g>
+    </svg>
+
     <!-- ── Season particles ─────────────────────────────── -->
     <div
       v-if="currentSeason === 'winter'"
@@ -218,9 +253,7 @@
         <p class="panel-desc">{{ moonDescription }}</p>
 
         <div class="panel-footer">
-          <span class="footer-hint"
-            >✦ &nbsp;You found the secret page&nbsp; ✦</span
-          >
+          <span class="footer-hint">✦ &nbsp;You found the secret page&nbsp; ✦</span>
         </div>
       </div>
     </Transition>
@@ -450,14 +483,7 @@ function makeFireflies(count) {
 }
 
 function makePetals(count) {
-  const COLORS = [
-    "#ffb7c5",
-    "#ff9eb5",
-    "#ff85a1",
-    "#ffc8d5",
-    "#ffadc0",
-    "#f9c6d0",
-  ];
+  const COLORS = ["#ffb7c5", "#ff9eb5", "#ff85a1", "#ffc8d5", "#ffadc0", "#f9c6d0"];
   return Array.from({ length: count }, () => {
     const drift = (Math.random() * 160 - 40).toFixed(0);
     return {
@@ -626,7 +652,8 @@ onMounted(() => {
     var(--horizon) 0%,
     var(--bg-top) 70%
   );
-  transition: background 3s ease;
+  transition:
+    background 3s ease;
   cursor: default;
 }
 
@@ -670,8 +697,7 @@ onMounted(() => {
   position: absolute;
   border-radius: 50%;
   background: #fff;
-  animation: twinkle var(--dur, 3s) ease-in-out var(--delay, 0s) infinite
-    alternate;
+  animation: twinkle var(--dur, 3s) ease-in-out var(--delay, 0s) infinite alternate;
 }
 
 @keyframes twinkle {
@@ -727,6 +753,32 @@ onMounted(() => {
   }
 }
 
+/* ── Constellation SVG ──────────────────────────────────────────────────────── */
+.constellation-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  animation: constellationPulse 8s ease-in-out infinite alternate;
+}
+
+.constellation line {
+  stroke: #b5bcc6;
+  stroke-width: 0.3;
+  stroke-linecap: round;
+}
+
+.constellation circle {
+  fill: #b5bcc6;
+}
+
+@keyframes constellationPulse {
+  from { opacity: 1; }
+  to { opacity: 0.4; }
+}
+
 /* ── Moon button ───────────────────────────────────────────────────────────── */
 .moon-btn {
   position: absolute;
@@ -753,9 +805,7 @@ onMounted(() => {
   background: #b5bcc6;
   overflow: hidden;
   clip-path: circle(40px at center);
-  transition:
-    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-    box-shadow 0.4s ease;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease;
   box-shadow: 0 0 30px rgba(var(--accent-rgb), 0.1);
 }
 
@@ -815,9 +865,7 @@ onMounted(() => {
   letter-spacing: 0.1em;
   font-weight: 400;
   text-shadow: 0 0 40px rgba(var(--accent-rgb), 0.35);
-  transition:
-    color 3s ease,
-    text-shadow 3s ease;
+  transition: color 3s ease, text-shadow 3s ease;
   line-height: 1;
 }
 
@@ -891,10 +939,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   z-index: 20;
-  transition:
-    border-color 0.3s ease,
-    background 0.3s ease,
-    transform 0.2s ease;
+  transition: border-color 0.3s ease, background 0.3s ease, transform 0.2s ease;
 }
 
 .sound-btn:hover {
@@ -944,9 +989,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition:
-    background 0.2s,
-    color 0.2s;
+  transition: background 0.2s, color 0.2s;
 }
 .panel-close:hover {
   background: rgba(255, 255, 255, 0.14);
@@ -1012,11 +1055,7 @@ onMounted(() => {
 
 .stat-fill {
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    rgba(var(--accent-rgb), 0.5),
-    var(--accent)
-  );
+  background: linear-gradient(90deg, rgba(var(--accent-rgb), 0.5), var(--accent));
   border-radius: 2px;
   transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -1219,8 +1258,7 @@ onMounted(() => {
     opacity: 1;
   }
   50% {
-    transform: translateY(52vh) translateX(calc(var(--drift, 120px) * 0.6))
-      rotate(360deg);
+    transform: translateY(52vh) translateX(calc(var(--drift, 120px) * 0.6)) rotate(360deg);
     opacity: 0.85;
   }
   100% {
@@ -1238,8 +1276,7 @@ onMounted(() => {
     opacity: 1;
   }
   50% {
-    transform: translateY(52vh) translateX(calc(var(--drift, -100px) * 0.5))
-      rotate(210deg);
+    transform: translateY(52vh) translateX(calc(var(--drift, -100px) * 0.5)) rotate(210deg);
     opacity: 0.9;
   }
   100% {
